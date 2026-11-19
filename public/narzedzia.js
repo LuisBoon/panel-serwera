@@ -329,7 +329,7 @@ PAGES.awaria = async (box) => {
     h('div', { class: 'head' }, h('div', null, h('h1', null, 'Plan awaryjny'), h('div', { class: 'sub' }, 'Co zrobić, gdyby ten serwer padł na dobre — i czy jesteś na to gotowy.')),
       h('div', { class: 'acts' }, linkBtn('Pobierz paczkę ratunkową', 'api/awaria/paczka', { kind: 'pri', icon: 'pobierz' }))),
     h('section', { class: 'card stack', style: 'gap:10px' }, h('h2', null, ready ? 'Wszystko gotowe' : 'Czego jeszcze brakuje'),
-      h('div', { class: 'fx-list' }, d.items.map((i) => h('div', { class: `fx-c ${i.ok === true ? 'ok' : i.ok === false ? 'bad' : 'info'}` }, h('span', { class: 'fx-s' }, i.ok === true ? '✓' : i.ok === false ? '✕' : 'i'),
+      h('div', { class: 'fx-list' }, d.items.map((i) => h('div', { class: `fx-c ${i.ok === true ? 'ok' : i.ok === false ? 'bad' : 'info'}` }, h('span', { class: 'fx-s', 'aria-hidden': 'true' }, ico(i.ok === true ? 'tak' : i.ok === false ? 'x' : 'literai', 14)),
         h('div', { class: 'stack grow', style: 'gap:4px' }, h('b', null, i.text), h('span', { class: 'small fx-text' }, i.desc), i.ok === false && i.link ? h('div', null, linkBtn('Napraw', i.link, { small: true })) : null))))),
     h('section', { class: 'card stack', style: 'gap:10px' }, h('h2', null, 'Jak to działa'),
       h('ol', { style: 'margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:#c9d1dc' },

@@ -26,7 +26,7 @@ async function tabApp(box, name, d) {
     toast(`Wysyłam ${f.name} (${bytes(f.size)})…`);
     const r = await upload(`${base}/zip`, f); watchJob(r.job, () => reload());
   });
-  const gitB = a.git ? btn('Aktualizuj z GitHuba', () => run(gitB, async () => { if (!(await ask({ title: 'Pobrać zmiany z GitHuba?', text: 'git pull + instalacja zależności + restart. Jeśli aplikacja nie wstanie, wrócę do obecnej wersji.', ok: 'Aktualizuj' }))) return; const r = await api('POST', `${base}/git`, {}); watchJob(r.job, () => reload()); }), { icon: 'aktualizacje' }) : null;
+  const gitB = a.git ? btn('Aktualizuj z GitHuba', () => run(gitB, async () => { if (!(await ask({ title: 'Pobrać zmiany z GitHuba?', text: 'git pull + instalacja zależności + restart. Jeśli aplikacja nie wstanie, wrócę do obecnej wersji.', ok: 'Aktualizuj' }))) return; const r = await api('POST', `${base}/git`, {}); watchJob(r.job, () => reload()); }), { icon: 'git' }) : null;
   const back = a.versions.length ? btn('Wróć do poprzedniej wersji', () => run(back, async () => { if (!(await ask({ title: 'Wrócić do poprzedniej wersji?', text: `Kod z ${when(a.versions[0].time)} (${a.versions[0].label}). Obecny stan też zapiszę.`, ok: 'Wróć', danger: true }))) return; const r = await api('POST', `${base}/wroc`, {}); watchJob(r.job, () => reload()); }), { icon: 'przywroc' }) : null;
   const lg = await api('GET', `${base}/logi`).catch(() => ({ lines: [] }));
   put(box,

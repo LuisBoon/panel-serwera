@@ -32,7 +32,7 @@ import * as GR from './lib/group.mjs';
 import * as SU from './lib/setup.mjs';
 import { run, spawnCollect, tail, readText, stamp } from './lib/util.mjs';
 
-const VERSION = '1.5.0';
+const VERSION = '1.5.1';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8099);
 const HOST = process.env.HOST || '127.0.0.1';

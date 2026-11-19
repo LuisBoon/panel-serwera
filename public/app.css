@@ -337,3 +337,12 @@ table.t tr.click { cursor: pointer; } table.t tr.click:hover td, table.t tr.clic
 .mod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px 16px; }
 .mod-item { align-items: flex-start; min-height: 0; padding: 6px 0; } .mod-item input { margin-top: 2px; flex: none; }
 details > summary { cursor: pointer; padding: 6px 0; }
+/* ikony (1.6): jeden zestaw Lucide, kreska 1,75; znaki ✓ ✗ ⚠ w tekstach zamieniane na ikony */
+.sym { display: inline-flex; vertical-align: -3px; margin-right: 5px; } .sym.lone { margin: 0; vertical-align: -2px; }
+.sym.ok { color: var(--ok); } .sym.bad { color: var(--bad); } .sym.warn { color: var(--warn); }
+.wz-step.done .wz-num .sym, .wz-step.on .wz-num .sym { color: inherit; }
+.toast .sym { vertical-align: -3px; }
+.fx-s svg { stroke-width: 2.5; }
+.pk-ico { color: var(--warn); display: inline-flex; vertical-align: -2px; margin-left: 4px; }
+.brand-sub { display: inline-flex; align-items: center; gap: 3px; } .brand-sub svg, .brand-btn > svg { opacity: .7; }
+.btn svg { flex: none; }

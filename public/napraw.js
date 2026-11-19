@@ -3,7 +3,7 @@
 const { h, put, api, btn, linkBtn, ico, busy, toast, ask, PAGES, isAdmin } = window.P;
 
 const fx = { problem: null, target: null, result: null, running: false };
-const ICON = { ok: '✓', bad: '✕', warn: '!', info: 'i', skip: '–' };
+const ICON = { ok: 'tak', bad: 'x', warn: 'wykrzyknik', info: 'literai', skip: 'minus' };
 
 PAGES.napraw = async (box, args, q) => {
   const d = await api('GET', 'api/napraw');
@@ -44,10 +44,10 @@ PAGES.napraw = async (box, args, q) => {
       const r = fx.result;
       const head = r.worst === 'bad' ? ['bad', 'Znalazłem problem'] : r.worst === 'warn' ? ['warn', 'Działa, ale jest coś do poprawy'] : ['ok', 'Nie widzę problemu'];
       parts.push(h('section', { class: 'stack', style: 'gap:12px', id: 'wynik' },
-        h('div', { style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap' }, h('h2', { style: 'font-size:19px' }, head[1]), h('span', { class: `pill ${head[0]}` }, `${r.checks.filter((c) => c.status === 'bad').length} błędów · ${r.checks.filter((c) => c.status === 'warn').length} uwag`), h('span', { class: 'grow' }), btn('Sprawdź jeszcze raz', () => run(), { small: true, icon: 'restart' })),
+        h('div', { style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap' }, h('h2', { style: 'font-size:19px' }, head[1]), h('span', { class: `pill ${head[0]}` }, `${r.checks.filter((c) => c.status === 'bad').length} błędów · ${r.checks.filter((c) => c.status === 'warn').length} uwag`), h('span', { class: 'grow' }), btn('Sprawdź jeszcze raz', () => run(), { small: true, icon: 'odswiez' })),
         h('div', { class: 'fx-list' }, r.checks.map((c) => {
-          const fb = c.fix && isAdmin() ? btn(c.fix.label, () => doFix(fb, c.fix), { small: true, kind: 'pri', icon: 'napraw' }) : null;
-          return h('div', { class: `fx-c ${c.status}` }, h('span', { class: 'fx-s', 'aria-hidden': 'true' }, ICON[c.status] || '·'),
+          const fb = c.fix && isAdmin() ? btn(c.fix.label, () => doFix(fb, c.fix), { small: true, kind: 'pri', icon: 'popraw' }) : null;
+          return h('div', { class: `fx-c ${c.status}` }, h('span', { class: 'fx-s', 'aria-hidden': 'true' }, ico(ICON[c.status] || 'minus', 14)),
             h('div', { class: 'stack grow', style: 'gap:4px;min-width:0' }, h('b', null, c.title), c.text ? h('span', { class: 'small fx-text' }, c.text) : null,
               fb || c.link ? h('div', { class: 'acts', style: 'margin-top:4px;flex-wrap:wrap' }, fb, c.link ? linkBtn('Pokaż', c.link, { small: true }) : null) : null));
         })),

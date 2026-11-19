@@ -111,4 +111,4 @@ Kopia z `AUTOPILOT=0` nie uruchamia autopilota i nie zmienia zapory serwera. Zg�
 
 ## Licencja
 
-MIT — zobacz [LICENSE](LICENSE).
+MIT — zobacz [LICENSE](LICENSE). Ikony: [Lucide](https://lucide.dev) (ISC) — [LICENSE-ikony.txt](LICENSE-ikony.txt).

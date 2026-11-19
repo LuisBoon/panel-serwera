@@ -360,7 +360,7 @@ async function tablesTab(box, d, engine, name, table, q) {
       od > 0 ? linkBtn('Poprzednie', `${tbase}?od=${Math.max(0, od - r.limit)}&szukaj=${enc(szukaj)}`, { small: true }) : null,
       r.rows.length === r.limit ? linkBtn('Następne', `${tbase}?od=${od + r.limit}&szukaj=${enc(szukaj)}`, { small: true }) : null),
     r.rows.length ? h('div', { class: 'scroll', style: 'max-height:65vh' }, h('table', { class: 't' },
-      h('thead', null, h('tr', null, r.cols.map((c) => h('th', { title: c.type || null }, c.name, c.pk ? h('span', { class: 'dim' }, ' 🔑') : null)))),
+      h('thead', null, h('tr', null, r.cols.map((c) => h('th', { title: c.type || null }, c.name, c.pk ? h('span', { class: 'pk-ico', title: 'klucz główny', 'aria-label': 'klucz główny' }, ico('klucz', 14)) : null)))),
       h('tbody', null, r.rows.map((row, i) => h('tr', { class: editable ? 'click' : '', tabindex: editable ? '0' : null, onclick: editable ? () => (r.mongo ? docModal(engine, name, table, r, i) : rowModal(engine, name, table, r, i)) : null, onkeydown: editable ? (e) => { if (e.key === 'Enter') (r.mongo ? docModal(engine, name, table, r, i) : rowModal(engine, name, table, r, i)); } : null },
         row.map((v) => h('td', { class: v == null ? 'null' : '', title: v != null && String(v).length > 40 ? v : null }, v == null ? 'NULL' : v))))))) : null));
 }

@@ -1,5 +1,13 @@
 # Zmiany
 
+## 1.5.1 — 19.11.2026
+
+- **Porządek w ikonach**: cały panel na jednym zestawie (Lucide, kreska 1,75) — każda pozycja menu ma inną ikonę
+  (Harmonogram i Dziennik zmian, Usługi i Wszystkie serwery nie są już takie same), dwa rozmiary (18 w menu,
+  16 w przyciskach), ikony pasują do znaczenia („Sprawdź” ≠ „Uruchom ponownie”, „Wyślij do chmury”, „Zapisz wersję”).
+- Znaki ✓ ✗ ⚠ w komunikatach i emoji 🔑 w tabelach zamienione na ikony; w kreatorze „Utwórz” ikony zamiast liter.
+- Nowa ikona aplikacji i karty przeglądarki w tym samym stylu.
+
 ## 1.5.0 — 19.11.2026
 
 Pierwsze wydanie publiczne.

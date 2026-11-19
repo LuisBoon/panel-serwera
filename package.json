@@ -1,6 +1,6 @@
 {
   "name": "panel-serwera",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "private": true,
   "type": "module",
   "description": "Panel do zarządzania serwerem Linux po polsku: strony, SSL, bazy, kopie, autopilot, grupa serwerów",

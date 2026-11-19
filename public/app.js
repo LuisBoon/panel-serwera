@@ -23,73 +23,112 @@ function h(tag, attrs, ...kids) {
     else if (k === 'href' && typeof v === 'string' && v.startsWith('api/')) el.setAttribute('href', apiPath(v));
     else el.setAttribute(k, v === true ? '' : v);
   }
-  for (const c of kids.flat(Infinity)) if (c != null && c !== false) el.append(c instanceof Node ? c : String(c));
+  const plain = NO_SYM.has(tag);
+  for (const c of kids.flat(Infinity)) if (c != null && c !== false) { if (c instanceof Node) el.append(c); else if (plain) el.append(String(c)); else el.append(...withIcons(String(c))); }
   return el;
 }
+// ✓ ✗ ✕ ⚠ w tekstach interfejsu zamieniamy na ikony (samotny znak, np. w numerze kroku, na sam „ptaszek” albo „×”)
+const SYM = { '✓': ['ok', 'ok'], '✗': ['blad', 'bad'], '✕': ['blad', 'bad'], '⚠': ['uwaga', 'warn'] };
+const NO_SYM = new Set(['textarea', 'option', 'pre', 'code', 'title', 'script', 'style']);
+function withIcons(str) {
+  if (!/[✓✗✕⚠]/.test(str)) return [str];
+  const t = str.trim();
+  if (t.length === 1) return [h('span', { class: `sym lone ${SYM[t][1]}`, 'aria-label': t === '✓' ? 'gotowe' : 'błąd' }, ico(t === '✓' ? 'tak' : t === '⚠' ? 'uwaga' : 'x', 14))];
+  return str.split(/([✓✗✕⚠])\s?/).filter(Boolean).map((part) => (SYM[part] ? h('span', { class: `sym ${SYM[part][1]}` }, ico(SYM[part][0], 16)) : part));
+}
 const NS = 'http://www.w3.org/2000/svg';
+// Ikony: Lucide (https://lucide.dev), licencja ISC — Copyright (c) Lucide Icons and Contributors; część pochodzi
+// z Feather (MIT, Copyright (c) 2013-present Cole Bemis). Jeden zestaw, kreska 1,75, siatka 24×24 — nie dorysowywać własnych.
+// Ikony: Lucide (https://lucide.dev), licencja ISC — Copyright (c) Lucide Icons and Contributors; część pochodzi
+// z Feather (MIT, Copyright (c) 2013-present Cole Bemis). Jeden zestaw, kreska 1,75, siatka 24×24 — nie dorysowywać własnych.
+// Ikony: Lucide (https://lucide.dev), licencja ISC — Copyright (c) Lucide Icons and Contributors; część pochodzi
+// z Feather (MIT, Copyright (c) 2013-present Cole Bemis). Jeden zestaw, kreska 1,75, siatka 24×24 — nie dorysowywać własnych.
 const ICONS = {
-  pulpit: '<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
-  strony: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
-  uslugi: '<rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/>',
-  bazy: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
-  kopie: '<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4"/>',
-  dysk: '<path d="M22 12H2M5.5 5h13l3.5 7v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/><path d="M6 16h.01M10 16h.01"/>',
-  logi: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h6"/>',
-  ssl: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
-  cron: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-  restart: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',
-  stop: '<rect x="6" y="6" width="12" height="12" rx="1.5"/>',
-  play: '<path d="M7 5v14l11-7z"/>',
-  pobierz: '<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>',
-  usun: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
-  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
-  x: '<path d="M6 6l12 12M18 6 6 18"/>',
-  ext: '<path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>',
-  przywroc: '<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
-  konto: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
-  sprzataj: '<path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/>',
-  wyloguj: '<path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l-5-5 5-5M5 12h11"/>',
-  wstecz: '<path d="M15 18l-6-6 6-6"/>',
-  plus: '<path d="M12 5v14M5 12h14"/>',
-  autopilot: '<path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
-  utworz: '<path d="M12 5v14M5 12h14"/>',
-  dzwonek: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
-  zapora: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9.3h18M3 14.7h18M9 4v5.3M15 9.3v5.4M9 14.7V20"/>',
-  statystyki: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
-  wgraj: '<path d="M12 21V9M7 14l5-5 5 5M5 3h14"/>',
-  edytuj: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/>',
-  gry: '<rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 11v3M5.5 12.5h3M15 12h.01M18 13h.01"/>',
-  kopiuj: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>',
-  klucz: '<circle cx="8" cy="15" r="4"/><path d="M10.8 12.2 20 3M16 7l3 3M14 9l2 2"/>',
-  ustawienia: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
-  serwery: '<rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01M11 6.5h6M11 17.5h6"/>',
-  terminal: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M13 15h4"/>',
-  napraw: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3 17.8V21h3.2l6.3-6.3a4 4 0 0 0 5.2-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>',
-  pomoc: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"/>',
-  wydajnosc: '<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-6"/>',
-  aktualizacje: '<path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/>',
-  dziennik: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-  dostep: '<circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 11h5M18.5 8.5v5"/>',
-  awaria: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/>',
-  alarm: '<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
-  aplikacja: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 9l-2 3 2 3M16 9l2 3-2 3M13 8l-2 8"/>',
+  pulpit: '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>', // layout-dashboard
+  napraw: '<path d="M11 2v2"/><path d="M5 2v2"/><path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"/><path d="M8 15a6 6 0 0 0 12 0v-3"/><circle cx="20" cy="10" r="2"/>', // stethoscope
+  serwery: '<rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/>', // network
+  logo: '<rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/>', // server
+  strony: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>', // globe
+  statystyki: '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>', // chart-column
+  bazy: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>', // database
+  kopie: '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>', // archive
+  awaria: '<circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="4"/>', // life-buoy
+  gry: '<line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>', // gamepad-2
+  uslugi: '<path d="m10.852 14.772-.383.923"/><path d="M13.148 14.772a3 3 0 1 0-2.296-5.544l-.383-.923"/><path d="m13.148 9.228.383-.923"/><path d="m13.53 15.696-.382-.924a3 3 0 1 1-2.296-5.544"/><path d="m14.772 10.852.923-.383"/><path d="m14.772 13.148.923.383"/><path d="M4.5 10H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-.5"/><path d="M4.5 14H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-.5"/><path d="M6 18h.01"/><path d="M6 6h.01"/><path d="m9.228 10.852-.923-.383"/><path d="m9.228 13.148-.923.383"/>', // server-cog
+  wydajnosc: '<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>', // gauge
+  aktualizacje: '<circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4"/><path d="M12 16V8"/>', // circle-arrow-up
+  autopilot: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>', // shield-check
+  zapora: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 9v6"/><path d="M16 15v6"/><path d="M16 3v6"/><path d="M3 15h18"/><path d="M3 9h18"/><path d="M8 15v6"/><path d="M8 3v6"/>', // brick-wall
+  dysk: '<path d="M10 16h.01"/><path d="M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><path d="M21.946 12.013H2.054"/><path d="M6 16h.01"/>', // hard-drive
+  logi: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>', // scroll-text
+  ssl: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', // lock
+  cron: '<path d="M16 14v2.2l1.6 1"/><path d="M16 2v3"/><path d="M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338"/><path d="M3 9h5.859"/><path d="M8 2v3"/><circle cx="16" cy="16" r="6"/>', // calendar-clock
+  terminal: '<path d="m7 11 2-2-2-2"/><path d="M11 13h4"/><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>', // square-terminal
+  dostep: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>', // users
+  dziennik: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>', // history
+  ustawienia: '<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/>', // settings
+  pomoc: '<circle cx="12" cy="12" r="10"/><path d="M9 9.5a3 2.5 0 016 0c0 2-2 2-3 3.5"/><path d="M12 17h.01"/>', // circle-help
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>', // plus
+  popraw: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/>', // wrench
+  restart: '<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>', // rotate-cw
+  odswiez: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>', // refresh-cw
+  sprawdz: '<path d="m8 11 2 2 4-4"/><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>', // search-check
+  stop: '<rect width="18" height="18" x="3" y="3" rx="2"/>', // square
+  play: '<path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/>', // play
+  pobierz: '<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>', // download
+  wgraj: '<path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>', // upload
+  edytuj: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>', // pencil
+  kopiuj: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>', // copy
+  usun: '<path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>', // trash-2
+  ext: '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>', // external-link
+  przywroc: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/>', // undo-2
+  sprzataj: '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>', // sparkles
+  zapisz: '<path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/>', // save
+  wyslij: '<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/>', // send
+  chmura: '<path d="M12 13v8"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="m8 17 4-4 4 4"/>', // cloud-upload
+  git: '<path d="M15 6a9 9 0 0 0-9 9V3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>', // git-branch
+  pliki: '<path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/>', // folder-open
+  konto: '<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>', // user-round
+  wyloguj: '<path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>', // log-out
+  dzwonek: '<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>', // bell
+  alarm: '<path d="M7 18v-6a5 5 0 1 1 10 0v6"/><path d="M5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z"/><path d="M21 12h1"/><path d="M18.5 4.5 18 5"/><path d="M2 12h1"/><path d="M12 2v1"/><path d="m4.929 4.929.707.707"/><path d="M12 12v6"/>', // siren
+  klucz: '<path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/>', // key-round
+  aplikacja: '<path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/>', // code-xml
+  wstecz: '<path d="m15 18-6-6 6-6"/>', // chevron-left
+  dalej: '<path d="m9 18 6-6-6-6"/>', // chevron-right
+  rozwin: '<path d="m6 9 6 6 6-6"/>', // chevron-down
+  menu: '<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>', // menu
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>', // x
+  szukaj: '<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>', // search
+  okno: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 4v4"/><path d="M2 8h20"/><path d="M6 4v4"/>', // app-window
+  zip: '<path d="M13.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v11.5"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M8 12v-1"/><path d="M8 18v-2"/><path d="M8 7V6"/><circle cx="8" cy="20" r="2"/>', // file-archive
+  blog: '<path d="M15 18h-5"/><path d="M18 14h-8"/><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0v-9a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="10" y="6" rx="1"/>', // newspaper
+  przekierowanie: '<path d="M12 13v8"/><path d="M12 3v3"/><path d="M2.354 10.354a1.207 1.207 0 0 1 0-1.708l2.06-2.06A2 2 0 0 1 5.828 6h12.344a2 2 0 0 1 1.414.586l2.06 2.06a1.207 1.207 0 0 1 0 1.708l-2.06 2.06a2 2 0 0 1-1.414.586H5.828a2 2 0 0 1-1.414-.586z"/>', // signpost
+  ok: '<circle cx="12" cy="12" r="10"/><path d="m16 9-5.5 5.5L8 12"/>', // circle-check
+  blad: '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>', // circle-x
+  uwaga: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>', // triangle-alert
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>', // info
+  tak: '<path d="M20 6 9 17l-5-5"/>', // check
+  minus: '<path d="M5 12h14"/>', // minus
+  wykrzyknik: '<path d="M12 6v8"/><path d="M12 18h.01"/>',
+  literai: '<path d="M12 11v6"/><path d="M12 7h.01"/>',
 };
 /** Dodaje dzieci, spłaszczając tablice i pomijając puste (null/false). */
 function put(box, ...kids) { for (const c of kids.flat(Infinity)) if (c != null && c !== false) box.append(c); }
 function ico(name, size = 18) {
   const s = document.createElementNS(NS, 'svg');
   s.setAttribute('width', size); s.setAttribute('height', size); s.setAttribute('viewBox', '0 0 24 24');
-  s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '2');
+  s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '1.75');
   s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round'); s.setAttribute('aria-hidden', 'true');
   s.innerHTML = ICONS[name] || '';
   return s;
 }
 function btn(label, onClick, { icon, kind = '', title, small, disabled } = {}) {
   const iconOnly = !label;
-  return h('button', { type: 'button', class: `btn ${kind} ${small ? 'sm' : ''} ${iconOnly ? 'ico' : ''}`, onclick: onClick, 'aria-label': iconOnly ? title : null, title: title || null, disabled: disabled || null }, icon ? ico(icon, small ? 16 : 18) : null, label || null);
+  return h('button', { type: 'button', class: `btn ${kind} ${small ? 'sm' : ''} ${iconOnly ? 'ico' : ''}`, onclick: onClick, 'aria-label': iconOnly ? title : null, title: title || null, disabled: disabled || null }, icon ? ico(icon, 16) : null, label || null);
 }
 function linkBtn(label, href, { icon, kind = '', small, blank } = {}) {
-  return h('a', { class: `btn ${kind} ${small ? 'sm' : ''} ${label ? '' : 'ico'}`, href, target: blank ? '_blank' : null, rel: blank ? 'noopener noreferrer' : null, 'aria-label': label ? null : 'Otwórz' }, icon ? ico(icon, small ? 16 : 18) : null, label || null);
+  return h('a', { class: `btn ${kind} ${small ? 'sm' : ''} ${label ? '' : 'ico'}`, href, target: blank ? '_blank' : null, rel: blank ? 'noopener noreferrer' : null, 'aria-label': label ? null : 'Otwórz' }, icon ? ico(icon, 16) : null, label || null);
 }
 async function busy(button, fn) {
   if (button) { button.disabled = true; button.dataset.l = button.textContent; }
@@ -236,7 +275,7 @@ let shell = null;
 function buildShell() {
   const nav = h('nav', { class: 'nav', 'aria-label': 'Menu panelu' });
   const side = h('aside', { class: 'side' },
-    h('button', { type: 'button', class: `brand brand-btn ${state.srv ? 'remote' : ''}`, onclick: (e) => window.openServerMenu?.(e.currentTarget), 'aria-label': 'Wybierz serwer', title: 'Wybierz serwer' }, h('div', { class: 'brand-ico' }, ico(state.srv ? 'serwery' : 'uslugi', 20)), h('div', { style: 'min-width:0' }, h('b', { class: 'ell', style: 'display:block' }, state.srv ? state.srvName : NM()), h('span', null, state.srv ? 'zdalnie · zmień ▾' : (isAdmin() ? 'panel serwera ▾' : 'panel serwera')))),
+    h('button', { type: 'button', class: `brand brand-btn ${state.srv ? 'remote' : ''}`, onclick: (e) => window.openServerMenu?.(e.currentTarget), 'aria-label': 'Wybierz serwer', title: 'Wybierz serwer' }, h('div', { class: 'brand-ico' }, ico(state.srv ? 'serwery' : 'logo', 20)), h('div', { style: 'min-width:0' }, h('b', { class: 'ell', style: 'display:block' }, state.srv ? state.srvName : NM()), h('span', { class: 'brand-sub' }, state.srv ? 'zdalnie · zmień' : 'panel serwera', state.srv || isAdmin() ? ico('rozwin', 14) : null))),
     isAdmin() ? h('a', { href: '#/utworz', class: 'btn pri create-btn', onclick: () => toggleMenu(false) }, ico('plus'), 'Utwórz') : null,
     nav,
     h('button', { type: 'button', class: 'btn ghost sm help-btn', onclick: () => { toggleMenu(false); window.openHelp?.(); } }, ico('pomoc', 16), 'Pomoc do tej strony'),
@@ -246,7 +285,7 @@ function buildShell() {
       h('div', { class: 'acts' }, linkBtn('Konto', '#/konto', { small: true, icon: 'konto' }), btn('Wyloguj', logout, { small: true, icon: 'wyloguj' }))));
   const main = h('main', { class: 'main', id: 'main', tabindex: '-1' });
   const menuBtn = btn('', () => toggleMenu(), { icon: 'menu', title: 'Menu' });
-  const top = h('div', { class: 'topbar' }, h('button', { type: 'button', class: 'brand brand-btn', onclick: (e) => window.openServerMenu?.(e.currentTarget), 'aria-label': 'Wybierz serwer' }, h('div', { class: 'brand-ico' }, ico(state.srv ? 'serwery' : 'uslugi', 18)), h('b', null, state.srv ? state.srvName : NM())), h('div', { class: 'acts' }, btn('', () => window.openHelp?.(), { icon: 'pomoc', title: 'Pomoc' }), menuBtn));
+  const top = h('div', { class: 'topbar' }, h('button', { type: 'button', class: 'brand brand-btn', onclick: (e) => window.openServerMenu?.(e.currentTarget), 'aria-label': 'Wybierz serwer' }, h('div', { class: 'brand-ico' }, ico(state.srv ? 'serwery' : 'logo', 18)), h('b', null, state.srv ? state.srvName : NM()), state.srv || isAdmin() ? ico('rozwin', 14) : null), h('div', { class: 'acts' }, btn('', () => window.openHelp?.(), { icon: 'pomoc', title: 'Pomoc' }), menuBtn));
   const scrim = h('div', { class: 'scrim', hidden: true, onclick: () => toggleMenu(false) });
   app.replaceChildren(h('div', { class: 'shell' }, top, side, scrim, main));
   shell = { nav, side, main, scrim };
@@ -434,7 +473,7 @@ PAGES.strony = async (box, args, q, quiet) => {
   put(box,
     h('div', { class: 'head' },
       h('div', null, h('h1', null, 'Strony'), h('div', { class: 'sub' }, `${list.filter((s) => s.enabled).length} włączonych · stan sprawdzany co minutę`)),
-      h('div', { class: 'acts' }, isAdmin() ? linkBtn('Strona statusu', '#/statusowa', { icon: 'ext' }) : null, (() => { const b = btn('Sprawdź teraz', () => busy(b, async () => { location.hash = '#/strony?odswiez'; if (q.has('odswiez')) await go(); }), { icon: 'restart' }); return b; })())),
+      h('div', { class: 'acts' }, isAdmin() ? linkBtn('Strona statusu', '#/statusowa', { icon: 'ext' }) : null, (() => { const b = btn('Sprawdź teraz', () => busy(b, async () => { location.hash = '#/strony?odswiez'; if (q.has('odswiez')) await go(); }), { icon: 'odswiez' }); return b; })())),
     h('section', { class: 'card' }, h('div', { class: 'rows' }, list.map((s) => {
       const days = daysLeft(s.cert?.validTo);
       const target = s.services.length ? `aplikacja: ${s.services.join(', ')}` : s.dir ? `${s.dir}${s.size != null ? ' · ' + bytes(s.size) : ''}` : '';
@@ -608,8 +647,8 @@ function cloudCard(c) {
     return h('section', { class: 'card', id: 'chmura' }, h('div', { class: 'card-h' }, h('div', null, h('h2', null, 'Kopie w chmurze'), h('div', { class: 'small muted', style: 'margin-top:4px' }, 'Teraz kopie leżą tylko na tym samym dysku co strony. Jeśli dysk padnie, przepadną razem z nimi. Podłącz miejsce w chmurze — kopie pójdą tam co noc, zaszyfrowane.'))), formBox);
   }
   const L = c.last, T = c.lastTest;
-  const sendB = btn('Wyślij teraz', () => call(sendB, 'POST', 'api/chmura/wyslij'), { small: true, icon: 'kopie', kind: 'pri', disabled: c.busy });
-  const testB = btn('Sprawdź kopię', () => call(testB, 'POST', 'api/chmura/sprawdz'), { small: true, icon: 'restart', disabled: c.busy });
+  const sendB = btn('Wyślij teraz', () => call(sendB, 'POST', 'api/chmura/wyslij'), { small: true, icon: 'chmura', kind: 'pri', disabled: c.busy });
+  const testB = btn('Sprawdź kopię', () => call(testB, 'POST', 'api/chmura/sprawdz'), { small: true, icon: 'sprawdz', disabled: c.busy });
   const keyB = h('a', { class: 'btn sm', href: 'api/chmura/klucz' }, ico('pobierz', 16), 'Pakiet odzyskiwania');
   keyB.onclick = async (e) => { e.preventDefault(); if (await ask({ title: 'Pobrać pakiet odzyskiwania?', text: 'To plik z kluczami do Twoich kopii w chmurze. Zapisz go poza serwerem (np. w menedżerze haseł) — bez niego nie da się odszyfrować kopii, gdy serwera zabraknie. Nie wysyłaj go nikomu.', ok: 'Pobierz' })) location.href = apiPath('api/chmura/klucz'); };
   const media = h('input', { type: 'checkbox', checked: c.media });
@@ -725,7 +764,7 @@ PAGES.dysk = async (box, args, q) => {
     h('section', { class: 'card' },
       h('div', { class: 'card-h' },
         h('div', null, h('h2', null, 'Co zajmuje miejsce'), h('div', { class: 'small muted', style: 'margin-top:4px' }, d.du.busy ? 'Liczę… (to trwa do minuty)' : tree.at ? `policzone ${ago(tree.at)}` : 'jeszcze nie policzone')),
-        (() => { const b = btn('Przelicz', async () => { await busy(b, () => api('POST', 'api/dysk/przelicz')); toast('Liczę od nowa — odśwież za chwilę.'); setTimeout(() => reload(), 20000); }, { small: true, icon: 'restart' }); return b; })()),
+        (() => { const b = btn('Przelicz', async () => { await busy(b, () => api('POST', 'api/dysk/przelicz')); toast('Liczę od nowa — odśwież za chwilę.'); setTimeout(() => reload(), 20000); }, { small: true, icon: 'odswiez' }); return b; })()),
       h('div', { class: 'crumbs' }, h('a', { href: '#/dysk' }, '/'), parts.map((x, i) => [h('span', { class: 'dim' }, i ? '/' : ''), h('a', { href: '#/dysk?dir=' + encodeURIComponent('/' + parts.slice(0, i + 1).join('/')) }, x)]), tree.size != null ? h('span', { class: 'muted', style: 'margin-left:8px' }, `· ${bytes(tree.size)}`) : null),
       tree.children.length ? h('div', null, tree.children.map((c) => h('div', { class: 'du-row' },
         h('div', { class: 'nm ell mono' }, c.more ? h('a', { href: '#/dysk?dir=' + encodeURIComponent(c.path) }, c.name + '/') : h('span', null, c.name + '/')),
@@ -790,12 +829,12 @@ PAGES.ssl = async (box, args, q, quiet) => {
   const list = [...d.sites].sort((a, z) => (a.cert?.validTo || 0) - (z.cert?.validTo || 0));
   put(box,
     h('div', { class: 'head' }, h('div', null, h('h1', null, 'Certyfikaty SSL'), h('div', { class: 'sub' }, 'Odnawiają się same: ' + (d.auto.map((a) => `${a.cmd.includes('acme') ? 'acme.sh' : 'certbot'} ${a.human}`).filter((v, i, arr) => arr.indexOf(v) === i).join(', ') || 'brak automatu!'))),
-      h('div', { class: 'acts' }, linkBtn('Sprawdź teraz', '#/ssl?odswiez', { icon: 'restart' }))),
+      h('div', { class: 'acts' }, linkBtn('Sprawdź teraz', '#/ssl?odswiez', { icon: 'odswiez' }))),
     h('section', { class: 'card' }, h('div', { class: 'rows' }, list.map((s) => {
       const days = daysLeft(s.cert?.validTo);
       const c = toolOf(s.name);
       const cls = days == null ? 'off' : days < 7 ? 'bad' : days < 21 ? 'warn' : 'ok';
-      const b = c ? btn('Odnów', () => renew(c, b), { small: true, icon: 'restart' }) : null;
+      const b = c ? btn('Odnów', () => renew(c, b), { small: true, icon: 'odswiez' }) : null;
       return h('div', { class: 'row', style: 'flex-wrap:wrap' },
         h('span', { class: `pill ${cls}` }, days == null ? '?' : `${days} d`),
         h('div', { class: 'stack grow', style: 'flex-basis:220px' }, h('span', { class: 't' }, s.name, !s.enabled ? h('span', { class: 'pill off', style: 'margin-left:8px' }, 'strona wyłączona') : null),
@@ -934,12 +973,12 @@ function showCreated(r, ip) {
 }
 
 const KINDS = [
-  { id: 'strona', letter: 'W', title: 'Strona internetowa', desc: 'pliki HTML lub PHP — wizytówka, sklep, blog', c: ['#1f6f62', '#d9fff7'] },
-  { id: 'zip', letter: 'Z', title: 'Strona z pliku ZIP', desc: 'masz gotową stronę na komputerze — wgrasz paczkę', c: ['#463614', '#ffe2a8'] },
-  { id: 'wordpress', letter: 'WP', title: 'WordPress', desc: 'gotowy blog albo strona firmowa — z bazą, SSL i kontem admina', c: ['#1d3550', '#cfe6ff'] },
-  { id: 'node', letter: 'N', title: 'Aplikacja Node.js', desc: 'działa w tle, np. komunikator albo gra — z własną usługą i logami', c: ['#2a3d5c', '#cfe0ff'] },
-  { id: 'baza', letter: 'B', title: 'Baza danych', desc: 'MariaDB z osobnym użytkownikiem i hasłem', c: ['#3a2a1a', '#ffd3b0'] },
-  { id: 'przekierowanie', letter: 'P', title: 'Przekierowanie', desc: 'adres, który prowadzi gdzie indziej', c: ['#3a1f3f', '#f5c9ff'] },
+  { id: 'strona', icon: 'okno', title: 'Strona internetowa', desc: 'pliki HTML lub PHP — wizytówka, sklep, blog', c: ['#1f6f62', '#d9fff7'] },
+  { id: 'zip', icon: 'zip', title: 'Strona z pliku ZIP', desc: 'masz gotową stronę na komputerze — wgrasz paczkę', c: ['#463614', '#ffe2a8'] },
+  { id: 'wordpress', icon: 'blog', title: 'WordPress', desc: 'gotowy blog albo strona firmowa — z bazą, SSL i kontem admina', c: ['#1d3550', '#cfe6ff'] },
+  { id: 'node', icon: 'aplikacja', title: 'Aplikacja Node.js', desc: 'działa w tle, np. komunikator albo gra — z własną usługą i logami', c: ['#2a3d5c', '#cfe0ff'] },
+  { id: 'baza', icon: 'bazy', title: 'Baza danych', desc: 'MariaDB z osobnym użytkownikiem i hasłem', c: ['#3a2a1a', '#ffd3b0'] },
+  { id: 'przekierowanie', icon: 'przekierowanie', title: 'Przekierowanie', desc: 'adres, który prowadzi gdzie indziej', c: ['#3a1f3f', '#f5c9ff'] },
 ];
 const STEPS = ['Co tworzysz', 'Adres', 'Ustawienia', 'Gotowe'];
 const wz = { step: 1, kind: null, sub: '', domain: '', custom: false, name: '', target: '', php: false, db: false, soon: true, zip: null, zipInfo: null, check: null, job: null, result: null, render: null };
@@ -1053,7 +1092,7 @@ PAGES.utworz = async (box) => {
   const step1 = () => h('section', { class: 'stack', style: 'gap:14px' },
     h('h2', { style: 'font-size:19px' }, 'Co chcesz utworzyć?'),
     h('div', { class: 'wz-kinds' }, KINDS.map((k) => h('button', { type: 'button', class: `wz-kind ${wz.kind === k.id ? 'on' : ''}`, 'aria-pressed': wz.kind === k.id ? 'true' : 'false', onclick: () => { wz.kind = k.id; wz.check = null; wz.php = false; wz.db = false; wz.render(); } },
-      h('span', { class: 'wz-ico', style: `background:${k.c[0]};color:${k.c[1]}` }, k.letter),
+      h('span', { class: 'wz-ico', style: `background:${k.c[0]};color:${k.c[1]}` }, ico(k.icon, 22)),
       h('span', { class: 'stack', style: 'gap:4px;text-align:left' }, h('b', { style: 'font-size:16px' }, k.title), h('span', { class: 'small muted', style: 'line-height:1.4' }, k.desc))))),
     nav(wz.kind ? 'anuluj' : null, 'dalej', !!wz.kind, wz.kind === 'baza' ? 'Dalej: nazwa' : 'Dalej: adres'));
 
@@ -1107,8 +1146,8 @@ PAGES.utworz = async (box) => {
         const x = new XMLHttpRequest();
         x.open('POST', apiPath('api/utworz/zip')); x.setRequestHeader('X-Panel', '1'); x.setRequestHeader('Content-Type', 'application/zip');
         x.upload.onprogress = (e) => { if (e.lengthComputable) zs.textContent = `Wgrywam… ${Math.round(e.loaded / e.total * 100)}%`; };
-        x.onload = () => { let j = {}; try { j = JSON.parse(x.responseText); } catch {} if (x.status !== 200) { zs.textContent = '✗ ' + (j.error || 'nie udało się wgrać'); return; } wz.zip = j.token; wz.zipInfo = j.info; wz.render(); };
-        x.onerror = () => { zs.textContent = '✗ błąd połączenia'; };
+        x.onload = () => { let j = {}; try { j = JSON.parse(x.responseText); } catch {} if (x.status !== 200) { zs.replaceChildren(...withIcons('✗ ' + (j.error || 'nie udało się wgrać'))); return; } wz.zip = j.token; wz.zipInfo = j.info; wz.render(); };
+        x.onerror = () => { zs.replaceChildren(...withIcons('✗ błąd połączenia')); };
         x.send(f);
       };
       parts.push(h('label', { class: 'field' }, h('b', null, 'Plik ZIP ze stroną'), zipIn, zs));
@@ -1158,7 +1197,7 @@ PAGES.utworz = async (box) => {
       d.created.length ? h('div', { class: 'rows' }, d.created.map((r) => {
         const [cls, lab] = SSL_LABEL[r.ssl] || ['off', r.host ? '—' : 'bez adresu'];
         const db2 = btn('', () => del(r, db2), { icon: 'usun', small: true, title: 'Usuń' });
-        const sb = r.host && r.ssl !== 'gotowe' ? btn('Sprawdź DNS i SSL', () => sslNow(r, sb), { small: true, icon: 'restart' }) : null;
+        const sb = r.host && r.ssl !== 'gotowe' ? btn('Sprawdź DNS i SSL', () => sslNow(r, sb), { small: true, icon: 'sprawdz' }) : null;
         return h('div', { class: 'row', style: 'flex-wrap:wrap' },
           h('span', { class: `pill ${r.host ? cls : 'info'}` }, r.host ? lab : 'baza'),
           h('div', { class: 'stack grow', style: 'flex-basis:220px' }, r.host ? h('a', { href: `${r.ssl === 'gotowe' ? 'https' : 'http'}://${r.host}/`, target: '_blank', rel: 'noopener noreferrer', class: 't', style: 'color:inherit' }, r.host, ' ', ico('ext', 13)) : h('span', { class: 't' }, r.slug),
@@ -1337,7 +1376,7 @@ PAGES.autopilot = async (box) => {
       gauge('Dysk', `${d.tiles.disk}%`, bar(d.tiles.disk), `próg sprzątania ${s.diskThreshold}%`),
       gauge('Ostatnia kopia', d.tiles.lastBackup ? when(d.tiles.lastBackup) : 'brak', null, '')),
     h('div', { class: 'cols' },
-      h('section', { class: 'card', style: 'flex-basis:460px' }, h('div', { class: 'card-h' }, h('h2', null, 'Co się działo'), btn('Sprawdź teraz', async (e) => { const b = e.currentTarget; await busy(b, () => api('POST', 'api/autopilot/teraz')); reload(); }, { small: true, icon: 'restart' })),
+      h('section', { class: 'card', style: 'flex-basis:460px' }, h('div', { class: 'card-h' }, h('h2', null, 'Co się działo'), btn('Sprawdź teraz', async (e) => { const b = e.currentTarget; await busy(b, () => api('POST', 'api/autopilot/teraz')); reload(); }, { small: true, icon: 'odswiez' })),
         d.events.length ? h('div', { class: 'rows' }, d.events.map((e) => h(e.detail ? 'details' : 'div', { class: 'row', style: 'display:block' },
           h(e.detail ? 'summary' : 'div', { style: 'display:flex;gap:12px;align-items:flex-start;cursor:' + (e.detail ? 'pointer' : 'default') },
             h('span', { class: 'small muted', style: 'width:92px;flex:none' }, when(e.ts)),
@@ -1417,7 +1456,7 @@ PAGES.strona = async (box, args, q, quiet) => {
     h('div', { class: 'cols' },
       h('section', { class: 'card' }, h('div', { class: 'card-h' }, h('h2', null, 'Co mogę tu zrobić')),
         h('div', { class: 'rows' },
-          d.info.roots.length ? h('a', { class: 'row', href: `${base}/pliki`, style: 'color:inherit' }, ico('logi'), h('div', { class: 'stack grow' }, h('b', null, 'Pliki strony'), h('span', { class: 's' }, 'Przeglądaj, edytuj, wgrywaj — przed każdym zapisem zostaje poprzednia wersja')), h('span', { class: 'muted' }, '›')) : null,
+          d.info.roots.length ? h('a', { class: 'row', href: `${base}/pliki`, style: 'color:inherit' }, ico('pliki'), h('div', { class: 'stack grow' }, h('b', null, 'Pliki strony'), h('span', { class: 's' }, 'Przeglądaj, edytuj, wgrywaj — przed każdym zapisem zostaje poprzednia wersja')), h('span', { class: 'muted' }, '›')) : null,
           h('a', { class: 'row', href: `${base}/wersje`, style: 'color:inherit' }, ico('przywroc'), h('div', { class: 'stack grow' }, h('b', null, 'Wersje i GitHub'), h('span', { class: 's' }, g.repo ? `połączone z ${g.repo.replace(/^https:\/\/|^git@|\.git$/g, '')} · ${g.status === 'blad' ? 'ostatnia aktualizacja nie wyszła' : g.last ? 'ostatnio ' + when(g.last) : 'jeszcze nie wgrywano'}` : 'Połącz z repozytorium — strona sama się zaktualizuje po wysłaniu zmian')), h('span', { class: 'muted' }, '›')),
           h('a', { class: 'row', href: `${base}/ochrona`, style: 'color:inherit' }, ico('ssl'), h('div', { class: 'stack grow' }, h('b', null, 'Hasło i przerwa techniczna'), h('span', { class: 's' }, [d.extras.password.on ? `hasło włączone (${d.extras.password.user})` : 'bez hasła', d.extras.maintenance.on ? 'trwa przerwa techniczna' : ''].filter(Boolean).join(' · '))), h('span', { class: 'muted' }, '›')))),
       h('section', { class: 'card' }, h('div', { class: 'card-h' }, h('h2', null, 'Szczegóły')),
@@ -1576,7 +1615,7 @@ async function siteVersions(box, name, d) {
     if (!(await ask({ title: 'Przywrócić tę wersję?', text: `${v.label}\n${when(v.ts)}\n\nObecny stan zapiszę jako nową wersję, więc da się wrócić. Foldery uploads, node_modules, cache i logi zostają bez zmian.`, ok: 'Przywróć', danger: true }))) return;
     await busy(b, async () => { try { const r = await api('POST', `${base}/wersje/${v.id}/przywroc`); watchJob(r.job); } catch (e) { toast(e.message, 'bad'); } });
   };
-  const snapB = btn('Zapisz wersję teraz', async () => { await busy(snapB, async () => { try { await api('POST', `${base}/wersje`, { label: 'Zapisane ręcznie' }); toast('✓ Zapisano wersję', 'ok'); reload(); } catch (e) { toast(e.message, 'bad'); } }); }, { small: true, icon: 'kopie' });
+  const snapB = btn('Zapisz wersję teraz', async () => { await busy(snapB, async () => { try { await api('POST', `${base}/wersje`, { label: 'Zapisane ręcznie' }); toast('✓ Zapisano wersję', 'ok'); reload(); } catch (e) { toast(e.message, 'bad'); } }); }, { small: true, icon: 'zapisz' });
   const SRC = { github: 'z GitHuba', panel: 'z panelu' };
   const versionsCard = h('section', { class: 'card' }, h('div', { class: 'card-h' }, h('div', null, h('h2', null, 'Wersje'), h('div', { class: 'small muted', style: 'margin-top:4px' }, 'Panel zapisuje stronę przed każdą zmianą z GitHuba i przed przywróceniem. Trzyma 10 ostatnich.')), snapB),
     d.versions.length ? h('div', { class: 'rows' }, d.versions.map((v, i) => {
@@ -1615,7 +1654,7 @@ async function siteVersions(box, name, d) {
         h('label', { class: 'check' }, del, h('span', null, 'Usuwaj pliki, których nie ma w repozytorium (bez uploads, .env, config.php)')),
         h('div', { class: 'acts' }, go, keyB), keyBox));
   } else {
-    const deployB = btn('Wgraj teraz', async () => { await busy(deployB, async () => { try { const r = await api('POST', `${base}/git/wdroz`, { force: false }); watchJob(r.job); } catch (e) { toast(e.message, 'bad'); } }); }, { small: true, kind: 'pri', icon: 'pobierz' });
+    const deployB = btn('Wgraj teraz', async () => { await busy(deployB, async () => { try { const r = await api('POST', `${base}/git/wdroz`, { force: false }); watchJob(r.job); } catch (e) { toast(e.message, 'bad'); } }); }, { small: true, kind: 'pri', icon: 'git' });
     const offB = btn('Odłącz', async () => { if (await ask({ title: 'Odłączyć repozytorium?', text: 'Pliki strony zostają. Panel przestanie je aktualizować z repozytorium.', ok: 'Odłącz', danger: true })) { try { await api('POST', `${base}/git`, { usun: true }); toast('Odłączono', 'ok'); reload(); } catch (e) { toast(e.message, 'bad'); } } }, { small: true, kind: 'ghost' });
     const cp = (txt, label) => btn(label, async () => { try { await navigator.clipboard.writeText(txt); toast('✓ Skopiowano', 'ok'); } catch { toast('Nie udało się skopiować', 'bad'); } }, { small: true, icon: 'kopiuj' });
     gitCard = h('section', { class: 'card' }, h('div', { class: 'card-h' }, h('div', null, h('h2', null, 'GitHub'), h('div', { class: 'small muted', style: 'margin-top:4px' }, `${g.repo} · gałąź ${g.branch}${g.subdir ? ' · folder ' + g.subdir : ''}`)), h('div', { class: 'acts' }, deployB, offB)),
@@ -1859,7 +1898,7 @@ PAGES.zapora = async (box) => {
 
 /* --------------------------------------------- logowanie i konfiguracja */
 
-function loginCard(...kids) { app.replaceChildren(h('div', { class: 'login-wrap' }, h('div', { class: 'login' }, h('div', { class: 'brand', style: 'padding:0' }, h('div', { class: 'brand-ico' }, ico('uslugi', 20)), h('div', null, h('b', null, NM()), h('span', null, 'panel serwera'))), ...kids))); }
+function loginCard(...kids) { app.replaceChildren(h('div', { class: 'login-wrap' }, h('div', { class: 'login' }, h('div', { class: 'brand', style: 'padding:0' }, h('div', { class: 'brand-ico' }, ico('logo', 20)), h('div', null, h('b', null, NM()), h('span', null, 'panel serwera'))), ...kids))); }
 
 function showLogin(msg) {
   shell = null; clearTimers();
