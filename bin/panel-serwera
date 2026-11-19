@@ -2,9 +2,10 @@
 # Polecenie panelu serwera (instalowane jako /usr/local/bin/panel-serwera).
 #   panel-serwera status | wersja | link | aktualizuj | logi | reset-logowania | odinstaluj
 set -uo pipefail
-DIR=/opt/panel-serwera
+DIR=${PANEL_DIR:-/opt/panel-serwera}
+USLUGA=${PANEL_USLUGA:-panel-serwera}
 DATA=${DATA_DIR:-/var/lib/panel-serwera}
-LOG=/var/log/panel-aktualizacja.log
+LOG=${PANEL_LOG:-/var/log/panel-aktualizacja.log}
 ver() { node -p "require('$DIR/package.json').version" 2>/dev/null; }
 adres() { node -e "try{const c=require('$DATA/konfiguracja.json');process.stdout.write(c.adres||'')}catch{}" 2>/dev/null; }
 pytaj() { [ "${BEZ_PYTAN:-}" = 1 ] && return 0; read -r -p "$1 [t/N] " a </dev/tty; [[ "$a" =~ ^[tTyY] ]]; }
@@ -30,7 +31,7 @@ case "${1:-pomoc}" in
       if [ "v$(ver)" = "$tag" ]; then echo "Masz najnowszą wersję ($tag)."; exit 0; fi
       git -c advice.detachedHead=false checkout --quiet "$tag" || { echo "Nie udało się przełączyć na $tag (zmiany w plikach panelu?)."; exit 1; }
       npm ci --omit=dev --no-audit --no-fund --loglevel=error || { echo "npm ci nie wyszło"; exit 1; }
-      systemctl restart panel-serwera && echo "✓ Panel zaktualizowany do $tag."
+      systemctl restart "$USLUGA" && echo "✓ Panel zaktualizowany do $tag." || { echo "Nie udało się uruchomić panelu po aktualizacji: journalctl -u $USLUGA -n 50"; exit 1; }
     } 2>&1 | tee -a "$LOG" ;;
   logi) journalctl -u panel-serwera -n "${2:-100}" --no-pager ;;
   reset-logowania)
