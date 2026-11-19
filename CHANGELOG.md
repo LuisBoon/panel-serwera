@@ -1,5 +1,32 @@
 # Zmiany
 
+## 1.7.0 — 19.11.2026
+
+- **Domeny i poczta** — nowa strona: domeny z OVH z datą wygaśnięcia (alarm, gdy domena nie odnowi się sama),
+  rekordy DNS do dodawania, zmiany i usuwania (z cofaniem w Dzienniku zmian), przekierowania poczty OVH
+  (kontakt@domena → Twoja skrzynka, z próbnym mailem) i kontrola SPF, DKIM i DMARC z przyciskiem „Dodaj”.
+  Klucz OVH obejmuje teraz też daty domen i pocztę (stary klucz działa dalej dla rekordów).
+- **Mapa serwera** — schemat strona → program → dane → połączenia z zewnątrz; kliknięcie podświetla drogę,
+  „Co padnie, jeśli wyłączę…” zaznacza wszystko, co zależy od usługi albo silnika bazy.
+- **Próbne przywracanie kopii** — raz w tygodniu (i przyciskiem) nocna kopia jest odtwarzana w tymczasowej bazie
+  i folderze: każdy zrzut MariaDB wczytany i policzony, archiwa przeczytane w całości, bazy SQLite ze środka
+  sprawdzone, próbka plików z migawki porównana z oryginałem. Zepsuta kopia = alarm.
+- **Strażnik plików stron** — co godzinę porównuje pliki .php, .js i .htaccess stron; zmiany z panelu i GitHuba
+  (a także aktualizacje WordPressa, wtyczek i pliki cache) są znane, każda inna trafia do Bezpieczeństwa z podglądem
+  kodu albo różnic i decyzją: usuń (kwarantanna), przywróć z nocnej kopii albo „to ja — zostaw”.
+- **Ochrona przed botami** — kto dziś szukał dziur na stronach (wp-login, .env, .git, phpmyadmin…), blokada adresu
+  jednym kliknięciem (fail2ban, porty 80 i 443) i automat: 10 prób w ciągu doby = blokada na dobę. Serwer w domu,
+  serwery z grupy i Twoja lista nigdy nie są blokowane; strony z WordPressem mają regułę bez ścieżek WordPressa.
+- **Własna aplikacja z Dockera** — w Sklepie półka „Własna”: obraz, port, adres, folder na dane, pamięć i zmienne
+  (z podpowiedzią z Docker Hub) albo wklejony docker-compose.yml — panel przestawia porty na 127.0.0.1, dodaje limity
+  pamięci, zamienia wolumeny na foldery w kopii, usuwa privileged/cap_add i odrzuca docker.sock, sieć hosta i obce foldery.
+- **Serwery gier w Sklepie** — Minecraft Java (Paper), Minecraft Bedrock, Terraria (TShock), Valheim; wolny port,
+  świat w nocnej kopii, adres do skopiowania, ostrzeżenie, gdy gra nie zmieści się w pamięci.
+- **Hosting dla znajomych** — zaproszenie z pakietem (Mały, Średni, Własny). Znajomy dostaje stronę „Twój hosting”:
+  zakłada strony (pliki, PHP z bazą, WordPress) pod *.login.domena (albo na swojej domenie), bazy, pliki i kopie
+  tylko swoje, prośba o więcej miejsca. Jego PHP działa jako osobny użytkownik systemu w osobnej puli FPM
+  (open_basedir, bez exec), Apache nie idzie za cudzymi dowiązaniami. Przekroczenie miejsca wstrzymuje wgrywanie.
+
 ## 1.6.0 — 19.11.2026
 
 - **Bezpieczeństwo** — nowa strona: wynik 0–100 i lista spraw z przyciskiem „Napraw” (logowanie roota hasłem,

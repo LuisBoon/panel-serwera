@@ -35,6 +35,7 @@ const HELP = {
     ['Jak zainstalować PostgreSQL albo MongoDB?', ['Bazy danych → Silniki → Zainstaluj. Trwa 1–3 minuty.', 'Silnik działa tylko lokalnie, z hasłem, i od razu trafia do nocnych kopii.']],
   ],
   kopie: [
+    ['Skąd wiem, że kopia naprawdę działa?', ['Karta „Kopia z nocy działa” na górze Kopii: raz w tygodniu panel odtwarza nocną kopię w osobnej bazie i folderze i sprawdza każdą bazę, archiwum i próbkę plików.', '„Sprawdź teraz” robi to od razu; „Termin” zmienia dzień i godzinę. Gdy próba nie wyjdzie, dostaniesz alarm.']],
     ['Kiedy robią się kopie?', ['Co noc o 3:30: wszystkie bazy, kod stron, konfiguracja i migawka przesłanych plików.', 'Dodatkowo przed każdą zmianą z panelu (plik, baza, wgranie) powstaje kopia „przed …”.']],
     ['Jak przywrócić bazę z kopii?', ['Kopie zapasowe → wybierz noc → Przywróć przy bazie (albo w karcie bazy → Kopie).', 'Wpisz nazwę bazy, żeby potwierdzić. Panel najpierw zapisze obecny stan.']],
     ['Kopie w chmurze', ['Kopie zapasowe → Kopie w chmurze: wklej klucz Backblaze B2 (10 GB za darmo).', 'Pobierz „Pakiet odzyskiwania” i trzymaj go poza serwerem — bez niego nie odszyfrujesz kopii.']],
@@ -92,7 +93,31 @@ const HELP = {
   utworz: [
     ['Jak postawić WordPressa?', ['Utwórz → WordPress → adres → Utwórz.', 'Panel założy bazę, pobierze WordPressa, ustawi SSL i pokaże login i hasło do panelu WordPressa.']],
   ],
+  mapa: [
+    ['Co pokazuje mapa serwera?', ['Od lewej: strony → programy, które je obsługują (usługi, PHP, kontenery) → dane (bazy) → połączenia z zewnątrz.', 'Kliknij stronę, program albo bazę — podświetli się droga i zobaczysz, co padnie, jeśli to wyłączysz.']],
+    ['Chcę coś wyłączyć — co przestanie działać?', ['Wybierz z listy „Co padnie, jeśli wyłączę…” usługę albo silnik bazy (np. MariaDB).', 'Na czerwono zaznaczą się wszystkie strony i połączenia, które od tego zależą.']],
+  ],
+  domeny: [
+    ['Jak podłączyć domeny z OVH?', ['Domeny i poczta → formularz „Podłącz OVH” → otwórz stronę OVH do tworzenia klucza (uprawnienia są już wpisane) → wklej trzy wartości.', 'Bez klucza panel i tak sprawdza pocztę (SPF, DKIM, DMARC) przez DNS.']],
+    ['Jak zrobić adres kontakt@mojadomena?', ['Domeny i poczta → wybierz domenę → Poczta → Nowy adres → wpisz „kontakt” i swoją skrzynkę.', 'Jeśli domena nie ma jeszcze poczty, panel zaproponuje dodanie rekordów MX OVH. Potem „Wyślij próbny mail”.']],
+    ['Maile z domeny trafiają do spamu', ['Domeny i poczta → Poczta: przy SPF i DMARC jest przycisk „Dodaj”.', 'DKIM dodaje się rekordem, który podaje usługa wysyłająca pocztę (np. Resend) — wpisz go w zakładce Rekordy DNS.']],
+    ['Kiedy wygasa moja domena?', ['Na liście domen jest data. Gdy domena nie odnawia się sama, panel ostrzeże miesiąc wcześniej (alarm na pulpicie).']],
+  ],
+  bezpieczenstwo: [
+    ['Co to jest „Pliki stron”?', ['Strażnik co godzinę sprawdza pliki .php, .js i .htaccess na stronach. Zmiana spoza panelu i GitHuba trafia tutaj z podglądem.', 'Podejrzany plik usuń (trafi do kwarantanny — odzyskasz go z Dziennika zmian) albo przywróć z nocnej kopii; swoją zmianę oznacz „To ja — zostaw”.']],
+    ['Ktoś ciągle skanuje moje strony', ['Bezpieczeństwo → Boty i skanery: lista adresów, które szukają wp-login, .env, .git… — przy każdym „Zablokuj”.', 'Albo włącz „Blokuj skanery same” — po 10 próbach w ciągu doby adres dostaje blokadę na dobę. Serwer w domu i Twoje adresy są zawsze wpuszczane.']],
+  ],
+  moje: [
+    ['Jak założyć stronę?', ['Twój hosting → Utwórz stronę → wybierz rodzaj (pliki, PHP z bazą albo WordPress) i nazwę → Utwórz.', 'Strona dostanie certyfikat https sama, gdy adres zacznie wskazywać na serwer.']],
+    ['Jak wgrać pliki?', ['Przy stronie kliknij „Pliki” → Wgraj. Możesz też podłączyć repozytorium GitHub w karcie strony (Wersje i GitHub).']],
+    ['Skończyło się miejsce', ['Usuń niepotrzebne pliki albo kliknij „Poproś o więcej miejsca” — wiadomość dostanie właściciel serwera.']],
+  ],
+  sklep: [
+    ['Jak zainstalować własną aplikację z Dockera?', ['Sklep z aplikacjami → Własna → wpisz obraz (np. z Docker Hub), port w kontenerze i adres → Zainstaluj.', 'Masz gotowy docker-compose.yml? Kliknij „Wklej compose.yml zamiast tego” → Sprawdź plik — panel pokaże, co poprawił.']],
+    ['Jak postawić serwer gry?', ['Sklep z aplikacjami → Gry → wybierz grę → Zainstaluj. Adres do wpisania w grze pojawi się przy serwerze („Kopiuj adres”).', 'Gry zajmują sporo pamięci — panel ostrzega, gdy się nie zmieszczą.']],
+  ],
   konto: [
+    ['Jak dać znajomemu miejsce na jego strony?', ['Konto → Osoby z dostępem → Zaproś osobę → „Znajomy z hostingiem” → wybierz pakiet (Mały, Średni albo Własny) → Utwórz link.', 'Znajomy sam zakłada strony pod *.jego-login.twoja-domena i widzi tylko swoje rzeczy. Pakiet zmienisz przyciskiem „Zmień” przy jego koncie.']],
     ['Jak zaprosić kogoś do panelu?', ['Konto → Osoby z dostępem → Zaproś → wybierz, co może (wszystko, tylko podgląd albo wybrane strony).', 'Wyślij tej osobie link — sama ustawi hasło i kod w telefonie.']],
     ['Zgubiłem telefon z kodami', ['Inna osoba z rolą właściciela może Ci pomóc. Jeśli jesteś jedynym właścicielem: w terminalu serwera (np. przez SSH) uruchom /opt/panel-serwera/reset-2fa.sh.']],
   ],

@@ -8,19 +8,28 @@ bazami i aplikacjami bez ciągłego siedzenia w konsoli. Działa w przeglądarce
 - **Bazy danych** — MariaDB, PostgreSQL, MongoDB, Redis i SQLite: zakładanie, konta, podgląd tabel, zapytania,
   kopie, przywracanie, klonowanie, instalacja silnika jednym kliknięciem.
 - **Kopie zapasowe** — nocne kopie (bazy, kod, konfiguracja, migawki mediów), przywracanie, kopie w chmurze (rclone),
-  **plan awaryjny** — paczka, z której stawia się serwer od zera.
+  **próbne przywracanie** co tydzień (kopia odtwarzana w osobnej bazie i folderze), **plan awaryjny** — paczka,
+  z której stawia się serwer od zera.
+- **Domeny i poczta** — domeny z OVH: daty wygaśnięcia, rekordy DNS do edycji, przekierowania poczty (kontakt@domena →
+  Twoja skrzynka) i kontrola SPF/DKIM/DMARC z przyciskiem „Dodaj”.
+- **Mapa serwera** — schemat strona → program → baza; pokazuje, co padnie, zanim coś wyłączysz.
 - **Autopilot** — sam podnosi usługi, które padły, pilnuje dysku, kopii, certyfikatów i aktualizacji; raporty i alarmy
   na e-mail, push albo komunikator GibCord.
 - **„Coś nie działa?”** — diagnoza typowych problemów z przyciskiem „Napraw”.
 - **Serwer** — usługi, wydajność z historią, aktualizacje systemu, harmonogram zadań, logi, dysk i sprzątanie,
   zapora ufw z bezpiecznikiem, terminal w przeglądarce, konta SFTP i klucze SSH.
 - **Sklep z aplikacjami** — Nextcloud, Vaultwarden, Uptime Kuma, Gitea, n8n, Umami, Paperless-ngx: kontener Docker,
-  adres z certyfikatem, kopie i aktualizacje przyciskiem.
-- **Bezpieczeństwo** — wynik 0–100 i lista spraw z przyciskiem „Napraw” (SSH, zapora, aktualizacje, fail2ban, certyfikaty).
+  adres z certyfikatem, kopie i aktualizacje przyciskiem; **własna aplikacja** z dowolnego obrazu albo pliku compose
+  (z kontrolą groźnych ustawień) i **serwery gier** (Minecraft Java i Bedrock, Terraria, Valheim).
+- **Bezpieczeństwo** — wynik 0–100 i lista spraw z przyciskiem „Napraw” (SSH, zapora, aktualizacje, fail2ban, certyfikaty),
+  **strażnik plików stron** (alarm przy zmianie plików PHP poza panelem, kwarantanna, przywracanie z kopii)
+  i **ochrona przed botami** (kto szuka dziur, blokada jednym kliknięciem albo automatem przez fail2ban).
+- **Hosting dla znajomych** — konto z pakietem (miejsce, strony, bazy); znajomy sam zakłada strony pod
+  `*.login.twoja-domena`, jego PHP działa w osobnej puli jako osobny użytkownik, zamknięte w swoim folderze.
 - **Grupa serwerów** — kilka serwerów z panelem łączysz kodem i zarządzasz wszystkimi z jednego miejsca; serwery
   pilnują się nawzajem (alarm, gdy któryś padnie), robią sobie nawzajem kopie i przenoszą strony między sobą.
-- **Bezpieczeństwo** — logowanie z kodem z aplikacji (2FA), role (właściciel, administrator, podgląd, dostęp do
-  wybranych stron), dziennik zmian z cofaniem, blokada po nieudanych logowaniach.
+- **Dostęp do panelu** — logowanie z kodem z aplikacji (2FA), role (właściciel, administrator, podgląd, dostęp do
+  wybranych stron, znajomy z hostingiem), dziennik zmian z cofaniem, blokada po nieudanych logowaniach.
 
 ## Instalacja
 

@@ -126,6 +126,29 @@ const ICONS = {
   minus: '<path d="M5 12h14"/>', // minus
   wykrzyknik: '<path d="M12 6v8"/><path d="M12 18h.01"/>',
   literai: '<path d="M12 11v6"/><path d="M12 7h.01"/>',
+  proba: '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h2"/><path d="M20 8v11a2 2 0 0 1-2 2h-2"/><path d="m9 15 3-3 3 3"/><path d="M12 12v9"/>', // archive-restore
+  probka: '<path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"/><path d="M6.453 15h11.094"/><path d="M8.5 2h7"/>', // flask-conical
+  domeny: '<path d="M21.54 15H17a2 2 0 0 0-2 2v4.54"/><path d="M7 3.34V5a3 3 0 0 0 3 3a2 2 0 0 1 2 2c0 1.1.9 2 2 2a2 2 0 0 0 2-2c0-1.1.9-2 2-2h3.17"/><path d="M11 21.95V18a2 2 0 0 0-2-2a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05"/><circle cx="12" cy="12" r="10"/>', // earth
+  poczta: '<path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/>', // mail
+  malpa: '<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>', // at-sign
+  mapa: '<path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/>', // map
+  plikstraz: '<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M12 9v4"/><path d="M12 17h.01"/>', // file-warning
+  bot: '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>', // bot
+  zablokuj: '<circle cx="12" cy="12" r="10"/><path d="M4.929 4.929 19.07 19.071"/>', // ban
+  dom: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', // house
+  zaufany: '<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m16 9-5.5 5.5L8 12"/>', // badge-check
+  kilof: '<path d="m14 13-8.381 8.38a1 1 0 0 1-3.001-3L11 9.999"/><path d="M15.973 4.027A13 13 0 0 0 5.902 2.373c-1.398.342-1.092 2.158.277 2.601a19.9 19.9 0 0 1 5.822 3.024"/><path d="M16.001 11.999a19.9 19.9 0 0 1 3.024 5.824c.444 1.369 2.26 1.676 2.603.278A13 13 0 0 0 20 8.069"/><path d="M18.352 3.352a1.205 1.205 0 0 0-1.704 0l-5.296 5.296a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l5.296-5.296a1.205 1.205 0 0 0 0-1.704z"/>', // pickaxe
+  miecz: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 20.414 6.586A2 2 0 0021 5.172V3h-2.172a2 2 0 00-1.414.586L6.5 14.5"/>', // sword
+  topor: '<path d="m14 12-8.381 8.38a1 1 0 0 1-3.001-3L11 9"/><path d="M15 15.5a.5.5 0 0 0 .5.5A6.5 6.5 0 0 0 22 9.5a.5.5 0 0 0-.5-.5h-1.672a2 2 0 0 1-1.414-.586l-5.062-5.062a1.205 1.205 0 0 0-1.704 0L9.352 5.648a1.205 1.205 0 0 0 0 1.704l5.062 5.062A2 2 0 0 1 15 13.828z"/>', // axe
+  znajomi: '<path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>', // users-round
+  link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>', // link
+  pauza: '<rect x="14" y="3" width="5" height="18" rx="1"/><rect x="5" y="3" width="5" height="18" rx="1"/>', // pause
+  oko: '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>', // eye
+  plikkod: '<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 12.5 8 15l2 2.5"/><path d="m14 12.5 2 2.5-2 2.5"/>', // file-code
+  skrot: '<path d="m15 10 5 5-5 5"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/>', // corner-down-right
+  klik: '<path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/>', // mouse-pointer-click
+  wiecej: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>', // ellipsis
+  moje: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', // house
 };
 /** Dodaje dzieci, spłaszczając tablice i pomijając puste (null/false). */
 function put(box, ...kids) { for (const c of kids.flat(Infinity)) if (c != null && c !== false) box.append(c); }
@@ -280,8 +303,8 @@ async function backupNow(ev) {
 
 const NAV = [
   ['pulpit', 'Pulpit'], ['napraw', 'Coś nie działa?'], ['serwery', 'Wszystkie serwery'],
-  ['-', 'Strony i dane'], ['strony', 'Strony'], ['sklep', 'Sklep z aplikacjami'], ['statystyki', 'Statystyki'], ['bazy', 'Bazy danych'], ['kopie', 'Kopie zapasowe'], ['awaria', 'Plan awaryjny'], ['gry', 'Serwery gier'],
-  ['-', 'Serwer'], ['uslugi', 'Usługi'], ['wydajnosc', 'Wydajność'], ['aktualizacje', 'Aktualizacje'], ['autopilot', 'Autopilot'], ['bezpieczenstwo', 'Bezpieczeństwo'], ['zapora', 'Zapora'], ['dysk', 'Dysk'], ['logi', 'Logi'], ['ssl', 'Certyfikaty SSL'], ['cron', 'Harmonogram'],
+  ['-', 'Strony i dane'], ['strony', 'Strony'], ['domeny', 'Domeny i poczta'], ['sklep', 'Sklep z aplikacjami'], ['statystyki', 'Statystyki'], ['bazy', 'Bazy danych'], ['kopie', 'Kopie zapasowe'], ['awaria', 'Plan awaryjny'], ['gry', 'Serwery gier'],
+  ['-', 'Serwer'], ['mapa', 'Mapa serwera'], ['uslugi', 'Usługi'], ['wydajnosc', 'Wydajność'], ['aktualizacje', 'Aktualizacje'], ['autopilot', 'Autopilot'], ['bezpieczenstwo', 'Bezpieczeństwo'], ['zapora', 'Zapora'], ['dysk', 'Dysk'], ['logi', 'Logi'], ['ssl', 'Certyfikaty SSL'], ['cron', 'Harmonogram'],
   ['-', 'Narzędzia'], ['terminal', 'Terminal'], ['dostep', 'Dostęp'], ['dziennik', 'Dziennik zmian'], ['ustawienia', 'Ustawienia panelu'], ['pomoc', 'Pomoc'],
 ];
 let shell = null;
@@ -295,7 +318,7 @@ function buildShell() {
     h('button', { type: 'button', class: 'btn ghost sm help-btn', onclick: () => { toggleMenu(false); window.openHelp?.(); } }, ico('pomoc', 16), 'Pomoc do tej strony'),
     h('div', { class: 'who' },
       h('b', null, `Zalogowany: ${state.login}`),
-      h('span', null, { wlasciciel: 'właściciel', admin: 'administrator', podglad: 'tylko podgląd', strony: 'wybrane strony' }[state.role] || 'login + kod z aplikacji'),
+      h('span', null, { wlasciciel: 'właściciel', admin: 'administrator', podglad: 'tylko podgląd', strony: 'wybrane strony', znajomy: 'hosting' }[state.role] || 'login + kod z aplikacji'),
       h('div', { class: 'acts' }, linkBtn('Konto', '#/konto', { small: true, icon: 'konto' }), btn('Wyloguj', logout, { small: true, icon: 'wyloguj' }))));
   const main = h('main', { class: 'main', id: 'main', tabindex: '-1' });
   const menuBtn = btn('', () => toggleMenu(), { icon: 'menu', title: 'Menu' });
@@ -313,13 +336,14 @@ function toggleMenu(open) {
 const NAV_MOD = { sklep: 'sklep', strony: 'strony', statystyki: 'statystyki', bazy: 'bazy', kopie: 'kopie', awaria: 'kopie', gry: 'gry', autopilot: 'autopilot', zapora: 'zapora', terminal: 'terminal', dostep: 'dostep' };
 function navFor() {
   if (state.role === 'strony') return [['strony', 'Moje strony'], ['statystyki', 'Statystyki']];
+  if (state.role === 'znajomy') return [['moje', 'Twój hosting'], ['statystyki', 'Statystyki']];
   const list = NAV.filter(([id]) => (!['terminal', 'dostep'].includes(id) || state.role === 'wlasciciel') && (!NAV_MOD[id] || MOD(NAV_MOD[id])) && (id !== 'serwery' || (!state.srv && isAdmin())) && (id !== 'ustawienia' || (!state.srv && state.role === 'wlasciciel')));
   return list.filter(([id], i) => id !== '-' || (list[i + 1] && list[i + 1][0] !== '-'));
 }
 function renderNav() {
   if (!shell) return;
   let cur = (location.hash.slice(2).split(/[/?]/)[0]) || 'pulpit';
-  if (cur === 'strona' || cur === 'statusowa') cur = 'strony';
+  if (cur === 'strona' || cur === 'statusowa') cur = state.role === 'znajomy' ? 'moje' : 'strony';
   shell.nav.replaceChildren(...navFor().map(([id, label]) => id === '-' ? h('div', { class: 'nav-sec' }, label) : h('a', { href: `#/${id}`, class: id === cur ? 'on' : '', 'aria-current': id === cur ? 'page' : null, onclick: () => toggleMenu(false) },
     ico(id), label,
     id === 'pulpit' && state.alertsBad ? h('span', { class: 'dot', title: 'Są błędy' }) : (state.counts[id] != null ? h('span', { class: 'cnt' }, state.counts[id]) : null))));
@@ -352,6 +376,7 @@ async function reload(quiet = true) {
   if (quiet && state.dirty) return;
   let { name, args, q } = parseHash();
   if (state.role === 'strony' && !['strony', 'strona', 'statystyki', 'konto'].includes(name)) name = 'strony';
+  if (state.role === 'znajomy' && !['moje', 'strona', 'statystyki', 'konto'].includes(name)) name = 'moje';
   const page = PAGES[name] || PAGES.pulpit;
   const seq = ++renderSeq;
   const main = shell.main;
@@ -733,6 +758,7 @@ PAGES.kopie = async (box) => {
       h('div', null, h('h1', null, 'Kopie zapasowe'), h('div', { class: 'sub' }, `Codziennie o ${pad(s.hour)}:${pad(s.minute)} · ostatnia udana ${lastOk ? when(lastOk.start) : '—'} · następna ${when(d.next)}`)),
       h('div', { class: 'acts' }, btn('Zrób kopię teraz', backupNow, { kind: 'pri', icon: 'kopie' }))),
     d.runs[0]?.status === 'error' ? h('div', { class: 'alert warn' }, h('span', { class: 'tag' }, 'UWAGA'), h('span', { class: 'txt' }, `Ostatnia próba (${when(d.runs[0].start)}): ${d.runs[0].error}`)) : null,
+    window.probaCard?.(d.proba, d.jobs),
     cloudCard(d.chmura),
     h('div', { class: 'cols' },
       h('section', { class: 'card' }, h('div', { class: 'card-h' }, h('h2', null, 'Ostatnie przebiegi')),
@@ -892,27 +918,31 @@ PAGES.cron = async (box) => {
 async function accountsCard() {
   let d;
   try { d = await api('GET', 'api/konta'); } catch { return null; }
-  const ROLE_SHORT = { wlasciciel: 'właściciel', admin: 'administrator', podglad: 'podgląd', strony: 'wybrane strony' };
-  const roleSel = (val) => h('select', { class: 'input', 'aria-label': 'Rola' }, Object.entries(d.roles).map(([k, v]) => h('option', { value: k, selected: k === val ? true : null }, v)));
+  const ROLE_SHORT = { wlasciciel: 'właściciel', admin: 'administrator', podglad: 'podgląd', strony: 'wybrane strony', znajomy: 'hosting' };
+  const roleSel = (val, withHost) => h('select', { class: 'input', 'aria-label': 'Rola' }, Object.entries(d.roles).filter(([k]) => withHost || k !== 'znajomy').map(([k, v]) => h('option', { value: k, selected: k === val ? true : null }, v)));
+  const pb = window.P.packBox ? window.P.packBox(d) : null;
   const sitesBox = (chosen) => h('div', { class: 'site-picks' }, d.sites.map((n) => h('label', { class: 'check', style: 'min-height:36px' }, h('input', { type: 'checkbox', value: n, checked: chosen.includes(n) }), h('span', { class: 'small' }, n))));
   const picked = (box) => [...box.querySelectorAll('input:checked')].map((i) => i.value);
   const editUser = async (u) => {
+    if (u.role === 'znajomy') return window.P.editPack?.(u, d);
     const rs = roleSel(u.role), sb = sitesBox(u.sites);
     sb.hidden = u.role !== 'strony'; rs.onchange = () => { sb.hidden = rs.value !== 'strony'; };
     if (!(await ask({ title: `Dostęp: ${u.name || u.login}`, ok: 'Zapisz', extra: h('div', { class: 'stack', style: 'gap:10px' }, rs, sb) }))) return;
     try { await api('POST', `api/konta/${enc(u.login)}`, { role: rs.value, sites: picked(sb) }); toast('✓ Zapisano', 'ok'); reload(); } catch (e) { toast(e.message, 'bad'); }
   };
   const removeUser = async (u) => {
-    if (!(await ask({ title: `Usunąć konto ${u.login}?`, text: 'Ta osoba zostanie od razu wylogowana i nie zaloguje się więcej.', ok: 'Usuń', danger: true }))) return;
-    try { await api('POST', `api/konta/${enc(u.login)}`, { usun: true }); toast('✓ Usunięto', 'ok'); reload(); } catch (e) { toast(e.message, 'bad'); }
+    const host = u.role === 'znajomy';
+    if (!(await ask({ title: `Usunąć konto ${u.login}?`, text: host ? `Usunę też wszystkie strony i bazy tej osoby (${u.hosting?.usage?.sites || 0} stron, ${u.hosting?.usage?.dbs || 0} baz). Kopie trafią do kosza kopii.` : 'Ta osoba zostanie od razu wylogowana i nie zaloguje się więcej.', ok: 'Usuń', danger: true, typed: host ? u.login : null }))) return;
+    try { const r = await api('POST', `api/konta/${enc(u.login)}`, { usun: true }); if (r.job) watchJob(r.job); else { toast('✓ Usunięto', 'ok'); reload(); } } catch (e) { toast(e.message, 'bad'); }
   };
   const invite = async () => {
     const nm = h('input', { class: 'input', placeholder: 'np. Ania', 'aria-label': 'Imię' });
-    const rs = roleSel('strony'), sb = sitesBox([]);
-    rs.onchange = () => { sb.hidden = rs.value !== 'strony'; };
-    if (!(await ask({ title: 'Zaproś osobę', ok: 'Utwórz link', extra: h('div', { class: 'stack', style: 'gap:10px' }, h('label', { class: 'field' }, h('span', null, 'Kto (imię albo nick)'), nm), h('label', { class: 'field' }, h('span', null, 'Co może'), rs), sb) }))) return;
+    const rs = roleSel('strony', true), sb = sitesBox([]);
+    if (pb) pb.el.hidden = true;
+    rs.onchange = () => { sb.hidden = rs.value !== 'strony'; if (pb) pb.el.hidden = rs.value !== 'znajomy'; };
+    if (!(await ask({ title: 'Zaproś osobę', ok: 'Utwórz link', extra: h('div', { class: 'stack', style: 'gap:10px' }, h('label', { class: 'field' }, h('span', null, 'Kto (imię albo nick)'), nm), h('label', { class: 'field' }, h('span', null, 'Co może'), rs), sb, pb?.el) }))) return;
     try {
-      const r = await api('POST', 'api/konta/zapros', { name: nm.value, role: rs.value, sites: picked(sb) });
+      const r = await api('POST', 'api/konta/zapros', { name: nm.value, role: rs.value, sites: picked(sb), ...(rs.value === 'znajomy' && pb ? pb.value() : {}) });
       const copy = btn('Kopiuj link', async () => { try { await navigator.clipboard.writeText(r.link); toast('✓ Skopiowano', 'ok'); } catch { toast('Zaznacz i skopiuj ręcznie', 'bad'); } }, { kind: 'pri', icon: 'kopiuj' });
       await ask({ title: 'Link z zaproszeniem', ok: 'Gotowe', extra: h('div', { class: 'stack', style: 'gap:10px' }, h('p', { class: 'small', style: 'margin:0' }, `Wyślij go ${nm.value} (np. komunikatorem). Działa 24 godziny i tylko raz. Osoba sama ustawi hasło i kod z aplikacji.`), h('div', { class: 'out', style: 'margin:0;overflow-wrap:anywhere' }, r.link), copy) });
       reload();
@@ -922,10 +952,11 @@ async function accountsCard() {
     h('div', { class: 'rows' },
       d.users.map((u) => h('div', { class: 'row', style: 'flex-wrap:wrap' },
         h('div', { class: 'stack grow', style: 'flex-basis:220px' }, h('b', null, u.name ? `${u.name} (${u.login})` : u.login, u.login === d.me ? h('span', { class: 'pill ok', style: 'margin-left:8px' }, 'Ty') : null),
-          h('span', { class: 's' }, `${ROLE_SHORT[u.role] || u.role}${u.sites.length ? ': ' + u.sites.join(', ') : ''} · ostatnio ${u.lastLogin ? ago(u.lastLogin) : 'nigdy'}`)),
+          h('span', { class: 's' }, `${ROLE_SHORT[u.role] || u.role}${u.sites.length ? ': ' + u.sites.join(', ') : ''} · ostatnio ${u.lastLogin ? ago(u.lastLogin) : 'nigdy'}`),
+          u.hosting && window.P.packUsage ? window.P.packUsage(u.hosting) : null),
         u.login === d.me ? null : h('div', { class: 'acts' }, btn('Zmień', () => editUser(u), { small: true }), btn('', () => removeUser(u), { small: true, icon: 'usun', title: 'Usuń konto', kind: 'ghost' })))),
       d.invites.map((z) => h('div', { class: 'row', style: 'flex-wrap:wrap' },
-        h('div', { class: 'stack grow', style: 'flex-basis:220px' }, h('b', null, `${z.name} — zaproszenie`), h('span', { class: 's' }, `${ROLE_SHORT[z.role]}${z.sites.length ? ': ' + z.sites.join(', ') : ''} · ważne do ${when(z.expires)}`)),
+        h('div', { class: 'stack grow', style: 'flex-basis:220px' }, h('b', null, `${z.name} — zaproszenie`), h('span', { class: 's' }, `${ROLE_SHORT[z.role]}${z.sites.length ? ': ' + z.sites.join(', ') : ''}${z.pakiet ? ` (pakiet ${z.pakiet.name})` : ''} · ważne do ${when(z.expires)}`)),
         btn('Anuluj', async () => { try { await api('POST', 'api/konta/zaproszenie-usun', { id: z.id }); reload(); } catch (e) { toast(e.message, 'bad'); } }, { small: true, kind: 'ghost' })))));
 }
 
@@ -948,7 +979,7 @@ PAGES.konto = async (box) => {
     try { await api('POST', 'api/wyloguj-wszedzie'); toast('✓ Gotowe', 'ok'); reload(); } catch (e) { toast(e.message, 'bad'); }
   }, { small: true });
   put(box,
-    h('div', { class: 'head' }, h('div', null, h('h1', null, 'Konto'), h('div', { class: 'sub' }, `Login: ${d.login} · ${{ wlasciciel: 'właściciel', admin: 'administrator', podglad: 'tylko podgląd', strony: 'dostęp do: ' + state.sites.join(', ') }[state.role] || ''} · logowanie hasłem i kodem z aplikacji`)),
+    h('div', { class: 'head' }, h('div', null, h('h1', null, 'Konto'), h('div', { class: 'sub' }, `Login: ${d.login} · ${{ wlasciciel: 'właściciel', admin: 'administrator', podglad: 'tylko podgląd', strony: 'dostęp do: ' + state.sites.join(', '), znajomy: 'hosting dla znajomych' }[state.role] || ''} · logowanie hasłem i kodem z aplikacji`)),
       h('div', { class: 'acts' }, btn('Wyloguj', logout, { icon: 'wyloguj' }))),
     people,
     h('section', { class: 'card' }, h('div', { class: 'card-h' }, h('h2', null, 'Zmiana hasła')), form),
@@ -1068,7 +1099,7 @@ function ovhCard(o, ip) {
   return h('section', { class: 'card' }, h('div', { class: 'card-h' }, h('div', null, h('h2', null, 'Podłącz OVH'), h('div', { class: 'small muted', style: 'margin-top:4px' }, 'Wtedy nie musisz dodawać adresów ręcznie — kreator zrobi to sam.'))),
     h('ol', { class: 'small', style: 'margin:0 0 12px;padding-left:20px;line-height:1.7;color:#c9d1dc' },
       h('li', null, 'Otwórz ', h('a', { href: o.tokenUrl || 'https://eu.api.ovh.com/createToken/?GET=/domain/zone/*&POST=/domain/zone/*&PUT=/domain/zone/*&DELETE=/domain/zone/*', target: '_blank', rel: 'noopener noreferrer' }, 'stronę OVH do tworzenia klucza'), ' i zaloguj się.'),
-      h('li', null, 'Nazwa: „panel serwera”, ważność: Unlimited. Uprawnienia są już wpisane (tylko strefy DNS).'),
+      h('li', null, 'Nazwa: „panel serwera”, ważność: Unlimited. Uprawnienia są już wpisane (strefy DNS, daty domen i przekierowania poczty).'),
       h('li', null, 'Wklej tutaj trzy wartości, które pokaże OVH.')),
     h('div', { class: 'form-grid' }, h('label', { class: 'field' }, h('span', null, 'Application Key'), ak), h('label', { class: 'field' }, h('span', null, 'Application Secret'), as), h('label', { class: 'field' }, h('span', null, 'Consumer Key'), ck)),
     h('div', { style: 'margin-top:12px' }, go));
@@ -1948,7 +1979,7 @@ function showSetup() {
   const fromHash = (location.hash.match(/setup=([A-Za-z0-9_-]+)/) || [])[1] || '';
   const err = h('div', { class: 'err', hidden: true, role: 'alert' });
   const codeIn = h('input', { class: 'input', value: fromHash, autocomplete: 'off', required: true, 'aria-label': 'Kod konfiguracji' });
-  const login = h('input', { class: 'input', autocomplete: 'username', autocapitalize: 'off', required: true, minlength: 3, value: 'bonkus' });
+  const login = h('input', { class: 'input', autocomplete: 'username', autocapitalize: 'off', required: true, minlength: 3, placeholder: 'np. admin' });
   const p1 = h('input', { class: 'input', type: 'password', autocomplete: 'new-password', minlength: 10, required: true });
   const p2 = h('input', { class: 'input', type: 'password', autocomplete: 'new-password', minlength: 10, required: true });
   const next = h('button', { class: 'btn pri', type: 'submit' }, 'Dalej');
@@ -2048,4 +2079,4 @@ function showInvite2(token, r) {
 })();
 
 /* --------------------------------- wspólne dla kolejnych plików (bazy.js itd.) */
-window.P = { apiPath, NM, MOD, buildShell: () => buildShell(), renderNav: () => renderNav(), h, put, api, btn, linkBtn, ico, ICONS, busy, toast, ask, watchJob, when, dateFull, ago, bytes, plural, pad, reload, go, every, PAGES, state, isAdmin, backLink, num, sitePill };
+window.P = { ovhCard: (o, ip) => ovhCard(o, ip), apiPath, NM, MOD, buildShell: () => buildShell(), renderNav: () => renderNav(), h, put, api, btn, linkBtn, ico, ICONS, busy, toast, ask, watchJob, when, dateFull, ago, bytes, plural, pad, reload, go, every, PAGES, state, isAdmin, backLink, num, sitePill };

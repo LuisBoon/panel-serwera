@@ -33,9 +33,16 @@ import * as SU from './lib/setup.mjs';
 import * as SEC from './lib/security.mjs';
 import * as MG from './lib/migrate.mjs';
 import * as SK from './lib/store.mjs';
+import * as PR from './lib/proba.mjs';
+import * as PF from './lib/pliki.mjs';
+import * as BT from './lib/boty.mjs';
+import * as MP from './lib/mapa.mjs';
+import * as DM from './lib/domeny.mjs';
+import * as HS from './lib/hosting.mjs';
 import { run, spawnCollect, tail, readText, stamp } from './lib/util.mjs';
 
-const VERSION = '1.6.0';
+const VERSION = '1.7.0';
+const TEST_COPY = process.env.AUTOPILOT === '0'; // kopia testowa panelu: nie zmienia zapory serwera
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8099);
 const HOST = process.env.HOST || '127.0.0.1';
@@ -91,7 +98,7 @@ const q = {
   clearFails: db.prepare('DELETE FROM fails WHERE ip=? OR ts<?'),
 };
 setInterval(() => q.oldSess.run(Date.now() - IDLE_MS, Date.now() - MAX_MS), 10 * 60e3).unref();
-const ROLES = { wlasciciel: 'Właściciel — wszystko, także konta', admin: 'Administrator — wszystko oprócz kont', podglad: 'Podgląd — widzi stan serwera, niczego nie zmienia', strony: 'Wybrane strony — pliki, wersje, GitHub, hasło i statystyki swoich stron' };
+const ROLES = { wlasciciel: 'Właściciel — wszystko, także konta', admin: 'Administrator — wszystko oprócz kont', podglad: 'Podgląd — widzi stan serwera, niczego nie zmienia', strony: 'Wybrane strony — pliki, wersje, GitHub, hasło i statystyki swoich stron', znajomy: 'Znajomy z hostingiem — sam zakłada strony i bazy w swoim pakiecie, widzi tylko swoje' };
 C.init(db);
 AP.init({ database: db, dataDir: DATA_DIR, publicUrl: PUBLIC_URL });
 F.init(db, DATA_DIR);
@@ -108,6 +115,12 @@ DB.init(db, DATA_DIR, { createdSites: () => C.list() });
 APP.init(db, DATA_DIR);
 AC.init(db);
 GR.init(db);
+PR.init(db, DATA_DIR);
+PF.init(db, DATA_DIR);
+MP.init({ dataDir: DATA_DIR, store: () => SK.list() });
+DM.init({ journal: J });
+HS.init(db, { notify: (t, b, l, o) => AP.sendNotification(t, b, l, o || {}), ovh: OV });
+BT.init(db, { groupHosts: () => GR.servers().map((x) => ({ name: x.nazwa, url: x.url })) });
 SY.init(db, DATA_DIR, { notify: (t, b, l, o) => AP.sendNotification(t, b, l, o || {}), event: (...a) => AP.event(...a) });
 if (process.env.AUTOPILOT !== '0') SY.afterBoot();
 SY.sample();
@@ -152,6 +165,7 @@ function startJob(kind, label, who, fn) {
     }
     catch (e) { say(`\n✗ ${e.message || e}\n`); job.ok = false; }
     job.end = Date.now();
+    if (job.site) PF.expectDone(job.site);
     q.log.run(Date.now(), who.login, who.ip, kind + ':koniec', label, job.ok ? 1 : 0);
     S.services.reset(); S.sites.reset(); D.databases.reset();
   })();
@@ -265,6 +279,12 @@ async function alerts() {
   const lastOk = runs.find((r) => r.status === 'ok');
   if (runs[0] && runs[0].status === 'error') out.push({ level: 'warn', text: `Ostatnia nocna kopia nie wykonała się: ${runs[0].error}`, link: '#/kopie' });
   else if (lastOk && Date.now() - lastOk.start > 36 * 3600e3) out.push({ level: 'warn', text: 'Od ponad doby nie było udanej kopii', link: '#/kopie' });
+  for (const a of await DM.alerts().catch(() => [])) out.push(a);
+  const pf = PF.openCounts();
+  if (pf.bad) out.push({ level: 'error', text: `${pf.bad} ${pf.bad === 1 ? 'podejrzany plik' : 'podejrzane pliki'} na stronach — sprawdź`, link: '#/bezpieczenstwo' });
+  else if (pf.open) out.push({ level: 'warn', text: `${pf.open} ${pf.open === 1 ? 'plik zmieniony' : 'pliki zmienione'} na stronach poza panelem`, link: '#/bezpieczenstwo' });
+  const pr = PR.last();
+  if (pr?.level === 'bad') out.push({ level: 'error', text: `Próbne przywrócenie kopii nie wyszło (${new Date(pr.ts).toLocaleDateString('pl-PL')})`, link: '#/kopie' });
   const tp = await S.testProcs();
   if (tp.length) out.push({ level: 'info', text: `${tp.length} procesów testowych zajmuje ${Math.round(tp.reduce((a, p) => a + p.rss, 0) / 1048576)} MB RAM`, link: '#/uslugi' });
   return out;
@@ -285,7 +305,8 @@ const route = (method, pattern, handler, opts = {}) => routes.push({ method, pat
 /* Uprawnienia: właściciel i administrator mogą wszystko (konta — tylko właściciel). Pozostali dostają
    tylko to, co jest wprost wymienione niżej — nowa trasa jest domyślnie zamknięta. */
 const ANY_ROUTES = new Set(['GET api/stan', 'POST api/wyloguj', 'POST api/wyloguj-wszedzie', 'GET api/konto', 'POST api/konto/haslo', 'GET api/zadania/:id', 'POST api/grupa/odlacz-mnie']);
-const VIEW_ROUTES = new Set(['api/sklep', 'api/bezpieczenstwo', 'api/grupa/stan', 'api/pulpit', 'api/strony', 'api/uslugi', 'api/kopie', 'api/autopilot', 'api/statystyki', 'api/statystyki/:site', 'api/ssl', 'api/cron', 'api/dysk', 'api/zapora', 'api/strona/:name', 'api/autopilot/push', 'api/gry'].map((x) => 'GET ' + x));
+const VIEW_ROUTES = new Set(['api/sklep', 'api/pliki/:id/podglad', 'api/boty', 'api/mapa', 'api/domeny', 'api/domeny/:zone', 'api/bezpieczenstwo', 'api/grupa/stan', 'api/pulpit', 'api/strony', 'api/uslugi', 'api/kopie', 'api/autopilot', 'api/statystyki', 'api/statystyki/:site', 'api/ssl', 'api/cron', 'api/dysk', 'api/zapora', 'api/strona/:name', 'api/autopilot/push', 'api/gry'].map((x) => 'GET ' + x));
+const HOST_ROUTES = new Set(['GET api/hosting/moje', 'POST api/hosting/strona', 'POST api/hosting/strona/usun', 'POST api/hosting/baza', 'POST api/hosting/baza/usun', 'GET api/hosting/baza/:db/dostep', 'POST api/hosting/prosba']);
 const SITE_ROUTES = new Set(['GET api/strony', 'GET api/statystyki', 'GET api/statystyki/:site', 'GET api/strona/:name', 'GET api/strona/:name/pliki', 'GET api/strona/:name/plik', 'POST api/strona/:name/plik', 'GET api/strona/:name/plik/wersja', 'POST api/strona/:name/plik/wersja',
   'POST api/strona/:name/pliki/:act', 'POST api/strona/:name/wgraj', 'GET api/strona/:name/pobierz', 'POST api/strona/:name/wersje', 'POST api/strona/:name/wersje/:id/przywroc', 'POST api/strona/:name/git', 'POST api/strona/:name/git/wdroz', 'POST api/strona/:name/haslo', 'POST api/strona/:name/przerwa']);
 function allowed(r, who, p) {
@@ -294,14 +315,15 @@ function allowed(r, who, p) {
   if (who.role === 'wlasciciel' || who.role === 'admin') return true;
   if (ANY_ROUTES.has(key)) return true;
   if (who.role === 'podglad') return VIEW_ROUTES.has(key);
-  if (who.role === 'strony') {
+  if (who.role === 'znajomy' && HOST_ROUTES.has(key)) return true;
+  if (who.role === 'strony' || who.role === 'znajomy') {
     if (!SITE_ROUTES.has(key)) return false;
     const n = p.name ?? p.site;
     return n == null || who.sites.includes(decodeURIComponent(n));
   }
   return false;
 }
-const mine = (who, name) => who.role !== 'strony' || who.sites.includes(name);
+const mine = (who, name) => (who.role !== 'strony' && who.role !== 'znajomy') || who.sites.includes(name);
 
 route('GET', 'api/stan', (req, res, { sess, who }) => {
   if (!sess && who?.viaGroup) return send(res, 200, { version: VERSION, setup: false, login: who.login, role: who.role, sites: [], name: '', konfig: CFG.publicInfo(), grupa: true });
@@ -729,8 +751,23 @@ route('POST', 'api/sklep/docker', tErr(async (req, res, { who }) => {
   send(res, 200, { job: startJob('sklep-docker', 'Instalacja Dockera', who, (say) => SK.installDocker(who, say)) });
 }), { owner: true });
 route('POST', 'api/sklep/zainstaluj', tErr(async (req, res, { b, who }) => {
+  if (TEST_COPY && !process.env.DOCKER_BIN) throw httpErr(400, 'To kopia testowa panelu — nie instaluje kontenerów na serwerze.');
+  if (b.kind === 'wlasna') {
+    if (who.role !== 'wlasciciel') throw httpErr(403, 'Własne aplikacje instaluje tylko właściciel.');
+    slog(who, 'sklep:wlasna', `${b.compose ? 'compose' : b.image} → ${b.host}`);
+    return send(res, 200, { job: startJob('sklep-instalacja', `Własna aplikacja: ${String(b.name || b.image || '')}`.slice(0, 80), who, (say) => SK.installCustom(b, who, say)) });
+  }
+  if (SK.GAMES.some((g) => g.id === b.app)) {
+    slog(who, 'sklep:gra', b.app);
+    return send(res, 200, { job: startJob('sklep-instalacja', `Serwer gry: ${SK.GAMES.find((g) => g.id === b.app).name}`, who, (say) => SK.installGame(b, who, say)) });
+  }
   slog(who, 'sklep:instaluj', `${b.app} → ${b.host}`);
   send(res, 200, { job: startJob('sklep-instalacja', `Instalacja: ${String(b.app || '')}`, who, (say) => SK.install(b, who, say)) });
+}));
+route('GET', 'api/sklep/obraz', tErr(async (req, res) => { send(res, 200, await SK.imageInfo(new URL(req.url, 'http://x').searchParams.get('nazwa'))); }));
+route('POST', 'api/sklep/compose/sprawdz', tErr(async (req, res, { b }) => {
+  const r = SK.sanitizeCompose(b.compose, { data: '/var/lib/aplikacje/nowa-aplikacja', port: await C.nextPort(), host: String(b.host || '').trim().toLowerCase() });
+  send(res, 200, r);
 }));
 route('GET', 'api/sklep/:id/logi', tErr(async (req, res, { p }) => send(res, 200, { text: await SK.logs(p.id) })));
 route('POST', 'api/sklep/:id/:act', tErr(async (req, res, { p, who }) => {
@@ -775,7 +812,118 @@ route('POST', 'api/przeniesienia/:id/usun', tErr(async (req, res, { p, who }) =>
 /* ---------------------------------------------------------------- bezpieczeństwo */
 
 SEC.init({ users: () => q.activeUsers.get().c, startJob: (...a) => startJob(...a) });
-route('GET', 'api/bezpieczenstwo', tErr(async (req, res) => { send(res, 200, await SEC.check()); }));
+route('GET', 'api/bezpieczenstwo', tErr(async (req, res, { ip }) => {
+  const r = await SEC.check();
+  const pf = PF.openCounts();
+  // strażnik plików: podejrzane pliki to ważna sprawa, zwykłe zmiany poza panelem — drobna
+  if (pf.open) {
+    r.items.unshift({ id: 'pliki', status: pf.bad ? 'bad' : 'warn', title: pf.bad ? `${pf.bad} ${pf.bad === 1 ? 'podejrzany plik' : 'podejrzane pliki'} na stronach` : `${pf.open} ${pf.open === 1 ? 'plik zmieniony' : 'pliki zmienione'} poza panelem`, text: 'Strażnik plików czeka na Twoją decyzję — niżej w „Pliki stron”.', link: { label: 'Pokaż', href: '#pliki' } });
+    if (pf.bad) { r.bad++; r.score = Math.max(0, r.score - 25); } else { r.warn++; r.score = Math.max(0, r.score - 5); }
+  }
+  r.pliki = PF.status();
+  try {
+    const bi = await BT.securityItem();
+    if (bi) { r.items.push(bi); if (bi.status === 'warn') r.warn++; }
+    r.boty = await BT.status(new URL(req.url, 'http://x').searchParams.get('odswiez') === '1');
+  } catch (e) { r.boty = { error: e.message }; }
+  r.myIp = ip;
+  send(res, 200, r);
+}));
+// domeny i poczta (OVH + kontrola DNS)
+const zoneP = (p) => decodeURIComponent(p.zone).toLowerCase();
+route('GET', 'api/domeny', tErr(async (req, res) => { send(res, 200, await DM.list(new URL(req.url, 'http://x').searchParams.get('odswiez') === '1')); }));
+route('GET', 'api/domeny/:zone', tErr(async (req, res, { p }) => { send(res, 200, await DM.detail(zoneP(p))); }));
+route('POST', 'api/domeny/:zone/rekord', tErr(async (req, res, { p, b, who }) => { const r = await DM.saveRecord(zoneP(p), b, who); slog(who, 'domeny:rekord', `${zoneP(p)} ${b.type} ${b.sub || '@'}`); send(res, 200, r); }));
+route('POST', 'api/domeny/:zone/rekord/:id/usun', tErr(async (req, res, { p, who }) => { const r = await DM.deleteRecord(zoneP(p), p.id, who); slog(who, 'domeny:rekord-usun', `${zoneP(p)} ${p.id}`); send(res, 200, r); }));
+route('POST', 'api/domeny/:zone/napraw', tErr(async (req, res, { p, b, who }) => { const r = await DM.fixMail(zoneP(p), b.name, b.what, who); slog(who, 'domeny:napraw', `${b.name} ${b.what}`); send(res, 200, r); }));
+route('POST', 'api/domeny/:zone/poczta', tErr(async (req, res, { p, b, who }) => {
+  try { const r = await DM.addRedirect(zoneP(p), b, who); slog(who, 'domeny:poczta', `${r.address} → ${b.to}`); send(res, 200, r); }
+  catch (e) { if (e.needMx) return send(res, 409, { error: 'mx', needMx: true }); throw e; }
+}));
+route('POST', 'api/domeny/:zone/poczta/:id/usun', tErr(async (req, res, { p, who }) => { const r = await DM.deleteRedirect(zoneP(p), p.id, who); slog(who, 'domeny:poczta-usun', p.id); send(res, 200, r); }));
+route('POST', 'api/domeny/:zone/proba-poczty', tErr(async (req, res, { p, b, who }) => {
+  const to = String(b.to || '').trim().toLowerCase();
+  if (!to.endsWith('@' + zoneP(p)) || !/^[a-z0-9._+-]+@[a-z0-9.-]+$/.test(to)) throw httpErr(400, 'Próbny mail wysyłam tylko na adres w tej domenie.');
+  await AP.sendMail(to, `Próba poczty: ${to}`, `To próbny mail z panelu serwera ${CFG.C().nazwa}.\nJeśli go widzisz, przekierowanie ${to} działa.\n\nWysłano: ${new Date().toLocaleString('pl-PL')} (${who.login})`);
+  slog(who, 'domeny:proba-poczty', to);
+  send(res, 200, { ok: true });
+}));
+J.handler('dns-rekord', async (d) => DM.undoRecord(d));
+// mapa serwera: strona → program → dane
+route('GET', 'api/mapa', tErr(async (req, res) => { send(res, 200, await MP.build(new URL(req.url, 'http://x').searchParams.get('odswiez') === '1')); }));
+// ochrona przed botami (fail2ban: panel-blokady + automat panel-skanery)
+const botGuard = () => { if (TEST_COPY) throw httpErr(400, 'To kopia testowa panelu — blokady zmieniają zaporę całego serwera.'); };
+route('GET', 'api/boty', tErr(async (req, res) => { send(res, 200, await BT.status(new URL(req.url, 'http://x').searchParams.get('odswiez') === '1')); }));
+route('POST', 'api/boty/automat', tErr(async (req, res, { b, who }) => {
+  botGuard();
+  const s = await BT.setAuto(!!b.on);
+  slog(who, 'boty:automat', b.on ? 'wł.' : 'wył.');
+  J.add(who, 'boty', `${b.on ? 'Włączono' : 'Wyłączono'} automatyczne blokowanie skanerów`, null, '#/bezpieczenstwo');
+  send(res, 200, s);
+}));
+route('POST', 'api/boty/zablokuj', tErr(async (req, res, { b, who }) => {
+  botGuard();
+  await BT.block(b.ip, who.login, b.note);
+  slog(who, 'boty:zablokuj', b.ip);
+  J.add(who, 'boty', `Zablokowano adres ${b.ip} (strony, porty 80 i 443)`, { type: 'boty-odblokuj', data: { ip: String(b.ip).trim() } }, '#/bezpieczenstwo');
+  send(res, 200, { ok: true });
+}));
+route('POST', 'api/boty/odblokuj', tErr(async (req, res, { b, who }) => {
+  botGuard();
+  await BT.unblock(b.ip);
+  slog(who, 'boty:odblokuj', b.ip);
+  J.add(who, 'boty', `Odblokowano adres ${b.ip}`, null, '#/bezpieczenstwo');
+  send(res, 200, { ok: true });
+}));
+route('POST', 'api/boty/zaufany', tErr(async (req, res, { b, ip, who }) => {
+  botGuard();
+  const addr = b.mine ? ip : b.ip;
+  const s = await BT.allow(addr, b.mine ? 'Twój adres' : b.note, b.add !== false);
+  slog(who, 'boty:zaufany', `${b.add === false ? '-' : '+'}${addr}`);
+  send(res, 200, s);
+}));
+J.handler('boty-odblokuj', async (d) => BT.unblock(d.ip));
+if (!TEST_COPY) { setTimeout(() => BT.restoreBans().catch(() => {}), 90e3).unref(); setInterval(() => BT.restoreBans().catch(() => {}), 6 * 3600e3).unref(); }
+// strażnik plików stron
+async function filesTick(only) {
+  const fresh = await PF.scan(only ? { only } : {});
+  if (!fresh.length) return fresh;
+  const by = new Map();
+  for (const f of fresh) { if (!by.has(f.site)) by.set(f.site, []); by.get(f.site).push(f); }
+  for (const [site, list] of by) {
+    const bad = list.filter((x) => x.bad);
+    const names = list.slice(0, 4).map((x) => `${x.path} (${x.kind}${x.bad ? ' — ' + x.bad : ''})`).join('\n');
+    const title = bad.length ? `Podejrzany plik na ${site}` : `${site}: ${list.length} ${list.length === 1 ? 'plik zmieniony' : 'pliki zmienione'} poza panelem`;
+    AP.event('pliki', bad.length ? 'error' : 'warn', title, { detail: names, key: `pliki:${list[0].id}` });
+    AP.sendNotification(title, `${names}${list.length > 4 ? `\n…i ${list.length - 4} więcej` : ''}\nZdecyduj w panelu: usuń, przywróć z kopii albo zostaw.`, bad.length ? 'error' : 'warn', { link: '#/bezpieczenstwo' }).catch(() => {});
+  }
+  return fresh;
+}
+let filesBusy = false;
+const filesRun = async () => { if (filesBusy) return; filesBusy = true; try { await filesTick(); } catch (e) { console.error('panel: strażnik plików', e.message); } finally { filesBusy = false; } };
+setTimeout(filesRun, Number(process.env.PLIKI_START_MS) || 120e3).unref();
+setInterval(filesRun, Number(process.env.PLIKI_MS) || 3600e3).unref();
+route('POST', 'api/pliki/skanuj', tErr(async (req, res, { b, who }) => {
+  if (filesBusy) throw httpErr(409, 'Sprawdzanie plików już trwa.');
+  filesBusy = true;
+  let fresh = [];
+  try { fresh = await filesTick(b.site ? String(b.site) : null); } finally { filesBusy = false; }
+  slog(who, 'pliki:skanuj', b.site || 'wszystkie');
+  send(res, 200, { fresh: fresh.length, status: PF.status() });
+}));
+route('GET', 'api/pliki/:id/podglad', tErr(async (req, res, { p }) => { send(res, 200, await PF.preview(p.id)); }));
+route('POST', 'api/pliki/ustawienia', tErr(async (req, res, { b, who }) => {
+  const s = PF.saveSettings({ on: b.on, site: b.site, watch: b.watch });
+  slog(who, 'pliki:ustawienia', JSON.stringify(b));
+  send(res, 200, s);
+}));
+route('POST', 'api/pliki/:id/:act', tErr(async (req, res, { p, who }) => {
+  const r = await PF.act(p.id, p.act, who.login);
+  slog(who, 'pliki:' + p.act, p.id);
+  if (r.qpath) J.add(who, 'pliki', `${p.act === 'usun' ? 'Usunięto podejrzany plik' : 'Przywrócono z kopii'} ${r.file}`, { type: 'kwarantanna', data: { qpath: r.qpath, file: r.file, site: r.site } }, '#/bezpieczenstwo');
+  send(res, 200, r);
+}));
+J.handler('kwarantanna', async (d, who) => { if (d.site) PF.expect(d.site, who?.login, 'cofnięte z dziennika'); PF.undoQuarantine(d.qpath, d.file); });
 route('POST', 'api/bezpieczenstwo/napraw', tErr(async (req, res, { b, who }) => {
   if (TEST_COPY) throw httpErr(400, 'To kopia testowa panelu — naprawy zmieniają cały serwer.');
   const r = await SEC.fix(String(b.id || ''), who);
@@ -829,7 +977,7 @@ route('POST', 'api/dziennik/:id/cofnij', tErr(async (req, res, { p, who }) => {
 
 route('GET', 'api/kopie', async (req, res) => {
   const set = D.backupSettings();
-  send(res, 200, { runs: D.backupRuns(30), files: D.backupFiles(), settings: set, next: nextRun(set.hour, set.minute), jobs: [...jobs.values()].filter((j) => j.kind.startsWith('kopia') || j.kind === 'przywracanie' || j.kind === 'chmura').slice(-5), chmura: { ...O.publicSettings(), providers: O.PROVIDERS, busy: O.isBusy() } });
+  send(res, 200, { runs: D.backupRuns(30), files: D.backupFiles(), settings: set, next: nextRun(set.hour, set.minute), jobs: [...jobs.values()].filter((j) => j.kind.startsWith('kopia') || j.kind === 'przywracanie' || j.kind === 'chmura' || j.kind === 'proba').slice(-5), proba: PR.status(), chmura: { ...O.publicSettings(), providers: O.PROVIDERS, busy: O.isBusy() } });
 });
 route('POST', 'api/kopie/teraz', async (req, res, { who }) => {
   q.log.run(Date.now(), who.login, who.ip, 'kopia:teraz', 'ręczne uruchomienie nocnej kopii', 1);
@@ -844,6 +992,28 @@ route('POST', 'api/kopie/teraz', async (req, res, { who }) => {
     return okRun;
   });
   send(res, 200, { job });
+});
+// próbne przywracanie: odtwarza najnowszą kopię w osobnej bazie i folderze i sprawdza, czy da się z niej wstać
+function probaJob(who, full) {
+  return startJob('proba', full ? 'Pełna próba przywrócenia (z plikami)' : 'Próbne przywrócenie kopii', who, async (say) => {
+    const r = await PR.runTest(say, { full });
+    if (r.level === 'bad') {
+      const bad = r.items.filter((x) => x.k === 'bad');
+      AP.event('kopie', 'error', `Próbne przywrócenie kopii nie wyszło: ${bad.map((x) => x.title).join(', ')}`, { key: `proba:${r.id}`, notify: 'wazne', detail: bad.map((x) => `${x.title}: ${x.detail}`).join('\n') });
+    } else AP.event('kopie', 'ok', `Próbne przywrócenie kopii: ${r.title.toLowerCase()}`, { key: `proba:${r.id}`, auto: who === SYS });
+    return { ok: r.level !== 'bad', result: { id: r.id, level: r.level, title: r.title } };
+  });
+}
+route('POST', 'api/kopie/proba', async (req, res, { b, who }) => {
+  const nightly = D.backupRuns(1)[0];
+  if (nightly?.status === 'running' && Date.now() - nightly.start < 3 * 3600e3) throw httpErr(409, 'Właśnie trwa nocna kopia — spróbuj, gdy się skończy.');
+  q.log.run(Date.now(), who.login, who.ip, 'kopia:proba', b.full ? 'pełna' : 'próbka', 1);
+  send(res, 200, { job: probaJob(who, !!b.full) });
+});
+route('POST', 'api/kopie/proba/ustawienia', async (req, res, { b, who }) => {
+  const s = PR.saveSettings(b);
+  q.log.run(Date.now(), who.login, who.ip, 'kopia:proba-ustawienia', JSON.stringify(s), 1);
+  send(res, 200, PR.status());
 });
 route('GET', 'api/kopie/pobierz', async (req, res, { who }) => {
   const p = new URL(req.url, 'http://x').searchParams.get('p');
@@ -1077,7 +1247,7 @@ route('GET', 'api/statystyki', async (req, res, { who }) => {
   const sp = new URL(req.url, 'http://x').searchParams;
   if (sp.has('odswiez')) await ST.update();
   const r = ST.summary(Number(sp.get('dni')) || 7);
-  if (who.role === 'strony') { r.sites = r.sites.filter((x) => mine(who, x.name)); r.tips = r.tips.filter((x) => mine(who, x.site)); r.total = null; }
+  if (who.role === 'strony' || who.role === 'znajomy') { r.sites = r.sites.filter((x) => mine(who, x.name)); r.tips = r.tips.filter((x) => mine(who, x.site)); r.total = null; }
   send(res, 200, r);
 });
 route('GET', 'api/statystyki/:site', async (req, res, { p }) => {
@@ -1161,6 +1331,7 @@ route('POST', 'api/strona/:name/git', tErr(async (req, res, { p, b, who }) => {
   send(res, 200, r);
 }));
 const deployJob = (n, who, force) => {
+  PF.expect(n, who.login === 'github' ? 'GitHub' : who.login, 'wdrożenie z repozytorium', 30 * 60e3);
   const job = startJob('git:' + n, `Aktualizacja z repozytorium: ${n}`, who, async (say) => {
     const r = await T.deploy(n, who.login, say, { force });
     if (!r.same) AP.event('wersje', 'ok', `${n}: wgrano „${r.msg}” z repozytorium`, { detail: who.login, auto: who.login === 'github' });
@@ -1279,6 +1450,18 @@ AP.addRule('chmura', async () => {
   const t = new Date(now); t.setHours(5, 30, 0, 0);
   if (now.getDay() === 0 && now >= t && s.last?.ok && (!s.lastTest || Date.now() - s.lastTest.start > 6 * 864e5) && ![...jobs.values()].some((j) => j.kind === 'chmura' && !j.end)) cloudJob(SYS, 'test');
 });
+AP.addRule('proba', async () => {
+  if (TEST_COPY || !PR.isDue()) return;
+  const nightly = D.backupRuns(1)[0];
+  if (nightly?.status === 'running' && Date.now() - nightly.start < 3 * 3600e3) return;
+  if ([...jobs.values()].some((j) => (j.kind === 'proba' || j.kind.startsWith('kopia') || j.kind === 'przywracanie') && !j.end)) return;
+  probaJob(SYS, false);
+});
+AP.addTodo(() => {
+  const l = PR.last();
+  if (l?.level === 'bad') return [{ level: 'error', text: 'Próbne przywrócenie kopii nie wyszło', desc: l.items.filter((x) => x.k === 'bad').map((x) => `${x.title}: ${x.detail}`).join(' · ').slice(0, 300), link: '#/kopie', cta: 'Pokaż' }];
+  return [];
+});
 AP.addTodo(async () => {
   const s = O.publicSettings();
   if (!s.configured) return [{ level: 'decision', text: 'Kopie leżą tylko na tym serwerze', desc: 'Jeśli padnie dysk, przepadną razem ze stronami. Podłącz chmurę (np. Backblaze B2 — 10 GB za darmo), a kopie będą co noc wysyłane zaszyfrowane.', link: '#/kopie', cta: 'Podłącz chmurę' }];
@@ -1370,19 +1553,23 @@ function checkRoleSites(role, sites) {
   if (role === 'strony' && !list.length) throw httpErr(400, 'Wybierz co najmniej jedną stronę.');
   return role === 'strony' ? list : [];
 }
-route('GET', 'api/konta', (req, res, { who }) => {
+route('GET', 'api/konta', async (req, res, { who }) => {
   const users = db.prepare('SELECT * FROM users WHERE active=1 ORDER BY created').all().map(userObj);
-  const invites = db.prepare('SELECT id,name,role,sites,created,expires,by FROM zaproszenia WHERE expires>? ORDER BY created DESC').all(Date.now()).map((x) => ({ ...x, sites: JSON.parse(x.sites || '[]') }));
-  send(res, 200, { users, invites, roles: ROLES, sites: S.siteConfigs().map((x) => x.name).sort(), me: who.login });
+  const invites = db.prepare('SELECT id,name,role,sites,created,expires,by,pakiet FROM zaproszenia WHERE expires>? ORDER BY created DESC').all(Date.now()).map((x) => ({ ...x, sites: JSON.parse(x.sites || '[]'), pakiet: x.pakiet ? JSON.parse(x.pakiet) : null }));
+  for (const u of users) if (u.role === 'znajomy') { try { u.hosting = { limits: HS.limits(u.login), usage: await HS.usage(u.login) }; } catch {} }
+  const m = S.metrics();
+  send(res, 200, { users, invites, roles: ROLES, sites: S.siteConfigs().map((x) => x.name).sort(), me: who.login, packs: HS.PACKS, diskFree: m.disk.free, domain: CFG.C().domena || '' });
 }, { owner: true });
 route('POST', 'api/konta/zapros', (req, res, { b, who }) => {
   const name = String(b.name || '').trim().slice(0, 60);
   if (!name) throw httpErr(400, 'Wpisz, kogo zapraszasz (np. imię).');
   const role = String(b.role || '');
   const sites = checkRoleSites(role, b.sites);
+  const pack = role === 'znajomy' ? HS.packFrom(b) : null;
+  if (pack && !CFG.C().domena) throw httpErr(400, 'Hosting dla znajomych potrzebuje głównej domeny panelu (Ustawienia panelu → domena).');
   const token = A.randomToken(24);
   const id = A.randomToken(6);
-  db.prepare('INSERT INTO zaproszenia(id,token,name,role,sites,created,expires,by) VALUES(?,?,?,?,?,?,?,?)').run(id, A.sha256(token), name, role, JSON.stringify(sites), Date.now(), Date.now() + 24 * 3600e3, who.login);
+  db.prepare('INSERT INTO zaproszenia(id,token,name,role,sites,created,expires,by,pakiet) VALUES(?,?,?,?,?,?,?,?,?)').run(id, A.sha256(token), name, role, JSON.stringify(sites), Date.now(), Date.now() + 24 * 3600e3, who.login, pack ? JSON.stringify(pack) : null);
   q.log.run(Date.now(), who.login, who.ip, 'konta:zaproszenie', `${name} (${role}${sites.length ? ': ' + sites.join(', ') : ''})`, 1);
   send(res, 200, { link: `${PUBLIC_URL}#zaproszenie=${token}`, expires: Date.now() + 24 * 3600e3 });
 }, { owner: true });
@@ -1394,6 +1581,22 @@ route('POST', 'api/konta/zaproszenie-usun', (req, res, { b, who }) => {
 route('POST', 'api/konta/:login', (req, res, { p, b, who }) => {
   const u = q.user.get(p.login);
   if (!u || !u.active) throw httpErr(404, 'Nie ma takiego konta.');
+  if (b.pakiet && u.role === 'znajomy') {
+    const l = HS.setPack(u.login, b);
+    q.log.run(Date.now(), who.login, who.ip, 'konta:pakiet', `${u.login}: ${l.name} ${l.disk} MB/${l.sites}/${l.dbs}`, 1);
+    return send(res, 200, { ok: true, limits: l });
+  }
+  if (b.usun && u.role === 'znajomy') {
+    const job = startJob('hosting', `Usuwanie konta ${u.login} z jego stronami`, who, async (say) => {
+      await HS.removeAccount(u.login, who, say);
+      db.prepare('DELETE FROM sessions WHERE login=?').run(u.login);
+      db.prepare('DELETE FROM users WHERE login=?').run(u.login);
+      say('✓ konto usunięte (kopie stron i baz są w koszu kopii)\n');
+      return true;
+    });
+    q.log.run(Date.now(), who.login, who.ip, 'konta:usun', u.login, 1);
+    return send(res, 200, { ok: true, job });
+  }
   if (b.usun) {
     if (u.login === who.login) throw httpErr(400, 'Nie możesz usunąć własnego konta.');
     if (u.role === 'wlasciciel' && db.prepare("SELECT count(*) c FROM users WHERE active=1 AND role='wlasciciel'").get().c <= 1) throw httpErr(400, 'To jedyny właściciel — nie da się go usunąć.');
@@ -1404,6 +1607,7 @@ route('POST', 'api/konta/:login', (req, res, { p, b, who }) => {
   }
   const role = String(b.role || u.role);
   if (u.login === who.login && role !== 'wlasciciel') throw httpErr(400, 'Nie odbieraj sobie roli właściciela.');
+  if ((role === 'znajomy') !== (u.role === 'znajomy')) throw httpErr(400, 'Hosting dla znajomych zakłada się zaproszeniem — tej roli nie da się nadać ani zabrać zmianą.');
   const sites = checkRoleSites(role, b.sites);
   db.prepare('UPDATE users SET role=?, sites=?, name=? WHERE login=?').run(role, JSON.stringify(sites), String(b.name ?? u.name).slice(0, 60), u.login);
   q.log.run(Date.now(), who.login, who.ip, 'konta:zmiana', `${u.login}: ${role}${sites.length ? ' (' + sites.join(', ') + ')' : ''}`, 1);
@@ -1416,7 +1620,7 @@ route('GET', 'api/zaproszenie/:token', (req, res, { p, ip }) => {
   if (tooMany(ip)) throw httpErr(429, 'Za dużo prób. Spróbuj za kilkanaście minut.');
   const z = inviteBy(p.token);
   if (!z) { failed(ip, 'zaproszenie'); throw httpErr(404, 'To zaproszenie wygasło albo zostało już użyte. Poproś o nowe.'); }
-  send(res, 200, { name: z.name, role: z.role, roleText: ROLES[z.role], sites: JSON.parse(z.sites || '[]'), by: z.by, expires: z.expires });
+  send(res, 200, { name: z.name, role: z.role, roleText: ROLES[z.role], sites: JSON.parse(z.sites || '[]'), by: z.by, expires: z.expires, pakiet: z.pakiet ? JSON.parse(z.pakiet) : null });
 }, { open: true });
 route('POST', 'api/zaproszenie/start', async (req, res, { b, ip }) => {
   if (tooMany(ip)) throw httpErr(429, 'Za dużo prób. Spróbuj za kilkanaście minut.');
@@ -1439,6 +1643,7 @@ route('POST', 'api/zaproszenie/koniec', async (req, res, { b, ip }) => {
   const st = A.verifyTotp(z.totp, b.totp, -1);
   if (st == null) { failed(ip, 'zaproszenie 2FA'); throw httpErr(400, 'Kod z aplikacji się nie zgadza. Sprawdź godzinę w telefonie i wpisz nowy kod.'); }
   if (q.user.get(z.login)?.active) throw httpErr(400, 'Ten login jest już zajęty — otwórz link jeszcze raz i wybierz inny.');
+  if (z.role === 'znajomy') { try { await HS.createAccount(z.login, JSON.parse(z.pakiet || '{}'), z.by); } catch (e) { throw httpErr(500, 'Nie udało się przygotować hostingu: ' + e.message); } }
   db.prepare('INSERT OR REPLACE INTO users(login,pass,totp,active,last_step,created,role,sites,name,last_login) VALUES(?,?,?,1,?,?,?,?,?,?)').run(z.login, z.pass, z.totp, st, Date.now(), z.role, z.sites, z.name, Date.now());
   db.prepare('DELETE FROM zaproszenia WHERE id=?').run(z.id);
   q.log.run(Date.now(), z.login, ip, 'konto:utworzone', `z zaproszenia od ${z.by} (${z.role})`, 1);
@@ -1447,9 +1652,48 @@ route('POST', 'api/zaproszenie/koniec', async (req, res, { b, ip }) => {
   send(res, 200, { ok: true, login: z.login });
 }, { open: true });
 
+/* ------------------------------------------------------ hosting dla znajomych */
+
+const hostOwn = (who) => { if (!HS.row(who.login)) throw httpErr(403, 'To konto nie ma hostingu.'); };
+const setSites = (login, fn) => { const u = q.user.get(login); let l = []; try { l = JSON.parse(u?.sites || '[]'); } catch {} l = fn(l); db.prepare('UPDATE users SET sites=? WHERE login=?').run(JSON.stringify([...new Set(l)]), login); };
+route('GET', 'api/hosting/moje', tErr(async (req, res, { who }) => { hostOwn(who); send(res, 200, { ...(await HS.overview(who.login, new URL(req.url, 'http://x').searchParams.get('odswiez') === '1')), ip: S.metrics().ip, jobs: [...jobs.values()].filter((j) => j.kind === 'hosting:' + who.login).slice(-3) }); }));
+route('POST', 'api/hosting/strona', tErr(async (req, res, { b, who }) => {
+  hostOwn(who);
+  await HS.precheck(who.login, b);
+  const job = startJob('hosting:' + who.login, `Nowa strona: ${String(b.host || '')}`.slice(0, 80), who, async (say) => {
+    const r = await HS.createSite(who.login, b, who, say);
+    setSites(who.login, (l) => [...l, r.host]);
+    AP.event('tworzenie', 'ok', `${who.login} założył stronę ${r.host} (hosting)`, { detail: b.template });
+    return { ok: true, result: { host: r.host, db: r.db, dbuser: r.dbuser, password: r.password, ssl: r.ssl, cms: r.cms } };
+  });
+  slog(who, 'hosting:strona', String(b.host));
+  send(res, 200, { job });
+}));
+route('POST', 'api/hosting/strona/usun', tErr(async (req, res, { b, who }) => {
+  hostOwn(who);
+  const host = String(b.host || '');
+  const job = startJob('hosting:' + who.login, `Usuwanie strony: ${host}`.slice(0, 80), who, async (say) => { await HS.removeSite(who.login, host, who, say); setSites(who.login, (l) => l.filter((x) => x !== host)); return true; });
+  slog(who, 'hosting:strona-usun', host);
+  send(res, 200, { job });
+}));
+route('POST', 'api/hosting/baza', tErr(async (req, res, { b, who }) => {
+  hostOwn(who);
+  const job = startJob('hosting:' + who.login, `Nowa baza: ${String(b.name || '')}`.slice(0, 80), who, async (say) => { const r = await HS.createDb(who.login, b.name, who, say); return { ok: true, result: { db: r.db, dbuser: r.dbuser, password: r.password } }; });
+  slog(who, 'hosting:baza', String(b.name));
+  send(res, 200, { job });
+}));
+route('POST', 'api/hosting/baza/usun', tErr(async (req, res, { b, who }) => {
+  hostOwn(who);
+  const job = startJob('hosting:' + who.login, `Usuwanie bazy: ${String(b.db || '')}`.slice(0, 80), who, async (say) => { await HS.removeDb(who.login, String(b.db || ''), who, say); return true; });
+  slog(who, 'hosting:baza-usun', String(b.db));
+  send(res, 200, { job });
+}));
+route('GET', 'api/hosting/baza/:db/dostep', tErr(async (req, res, { p, who }) => { hostOwn(who); slog(who, 'hosting:dostep', p.db); send(res, 200, HS.dbAccess(who.login, decodeURIComponent(p.db))); }));
+route('POST', 'api/hosting/prosba', tErr(async (req, res, { b, who }) => { hostOwn(who); await HS.askMore(who.login, q.user.get(who.login)?.name, b.text); slog(who, 'hosting:prosba', String(b.text || '').slice(0, 100)); send(res, 200, { ok: true }); }));
+setInterval(() => HS.checkLimits().catch((e) => console.error('panel: hosting', e.message)), 6 * 3600e3).unref();
+
 /* ---------------------------------------------------------------- zapora */
 
-const TEST_COPY = process.env.AUTOPILOT === '0'; // kopia testowa panelu: nie zmienia zapory serwera
 const fwGuard = () => { if (TEST_COPY) throw httpErr(400, 'To kopia testowa panelu — zapory nie zmienia.'); };
 route('GET', 'api/zapora', async (req, res) => { send(res, 200, { ...(await F.status()), serviceNames: Object.fromEntries(Object.entries(F.SERVICES).map(([k, v]) => [k, v.name])), undoSeconds: F.UNDO_SECONDS, jobs: [...jobs.values()].filter((j) => j.kind === 'zapora').slice(-1) }); });
 route('POST', 'api/zapora/wlacz', async (req, res, { who }) => {
@@ -1597,6 +1841,8 @@ const server = http.createServer(async (req, res) => {
     const mod = /^api\/(terminal|dostep)(\/|$)/.exec(rel);
     if (mod && !CFG.on(mod[1])) throw httpErr(403, `Moduł „${CFG.MODULES[mod[1]][0]}” jest wyłączony (Ustawienia panelu).`);
     const b = req.method === 'POST' && !r.opts.raw ? await body(req) : {};
+    if (who.role === 'znajomy' && req.method === 'POST' && /^api\/strona\/:name\/(wgraj|plik|pliki\/:act|git\/wdroz|wersje\/:id\/przywroc)$/.test(r.pattern) && await HS.over(who.login)) throw httpErr(403, 'Przekroczony limit miejsca w Twoim pakiecie — usuń coś albo poproś o więcej (Twój hosting).');
+    if (req.method === 'POST' && p.name && r.pattern.startsWith('api/strona/:name/')) PF.expect(decodeURIComponent(p.name), who.login, `panel: ${r.pattern.slice('api/strona/:name/'.length)}`);
     await r.handler(req, res, { p, b, ip, sess, who });
   } catch (e) {
     // błędy z kontroli danych (zła ścieżka, nazwa, brak pliku) to błąd zapytania, nie serwera

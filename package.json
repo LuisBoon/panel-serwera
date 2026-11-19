@@ -1,6 +1,6 @@
 {
   "name": "panel-serwera",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "type": "module",
   "description": "Panel do zarządzania serwerem Linux po polsku: strony, SSL, bazy, kopie, autopilot, grupa serwerów",
@@ -26,6 +26,7 @@
     "nodemailer": "^6.9.16",
     "pg": "^8.23.1",
     "qrcode-generator": "^1.4.4",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "yaml": "^2.9.1"
   }
 }
