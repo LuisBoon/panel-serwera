@@ -1,0 +1,26 @@
+{
+  "name": "panel-serwera",
+  "version": "1.5.0",
+  "private": true,
+  "type": "module",
+  "description": "Panel do zarządzania serwerem Linux po polsku: strony, SSL, bazy, kopie, autopilot, grupa serwerów",
+  "main": "server.mjs",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/LuisBoon/panel-serwera.git" },
+  "engines": { "node": ">=22.5" },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.mjs",
+    "postinstall": "node bin/vendor.mjs",
+    "check": "node bin/sprawdz.mjs"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
+    "mongodb": "^7.8.0",
+    "mysql2": "^3.24.6",
+    "nodemailer": "^6.9.16",
+    "pg": "^8.23.1",
+    "qrcode-generator": "^1.4.4",
+    "web-push": "^3.6.7"
+  }
+}

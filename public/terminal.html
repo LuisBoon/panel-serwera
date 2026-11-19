@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#06080b">
+<meta name="robots" content="noindex, nofollow">
+<title>Terminal · panel serwera</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap">
+<link rel="stylesheet" href="vendor/xterm.css">
+<link rel="stylesheet" href="terminal.css?v=1">
+</head>
+<body>
+<header class="tb">
+  <a href="./#/terminal" class="back">‹ Panel</a>
+  <b class="title">Terminal</b>
+  <span class="warn" id="badge">pełny dostęp root · sesja zapisywana</span>
+  <span class="grow"></span>
+  <button type="button" class="b" id="end" hidden>Zakończ</button>
+</header>
+<nav class="sc" id="shortcuts" hidden aria-label="Skróty">
+  <button type="button" class="b" data-cmd="tail -n 40 /var/log/apache2/error.log">Ostatnie błędy Apache</button>
+  <button type="button" class="b" data-cmd="df -h / &amp;&amp; du -xsh /var/* 2&gt;/dev/null | sort -h | tail -8">Miejsce na dysku</button>
+  <button type="button" class="b" data-cmd="ps -eo pid,pcpu,rss,etime,comm --sort=-rss | head -15">Co zjada pamięć</button>
+  <button type="button" class="b" data-cmd="systemctl --failed --no-pager">Usługi z błędem</button>
+  <button type="button" class="b" data-cmd="journalctl -p err -n 30 --no-pager">Błędy systemu</button>
+  <span class="keys">
+    <button type="button" class="b k" data-key="\t">Tab</button>
+    <button type="button" class="b k" data-key="\u0003">Ctrl+C</button>
+    <button type="button" class="b k" data-key="\u001b">Esc</button>
+    <button type="button" class="b k" data-key="\u001b[A">↑</button>
+    <button type="button" class="b k" data-key="\u001b[B">↓</button>
+  </span>
+</nav>
+<main id="main">
+  <form class="gate" id="gate">
+    <h1>Otwórz terminal</h1>
+    <p>To pełna konsola serwera z prawami administratora (root). Wpisane polecenia działają od razu — także te, które mogą coś zepsuć. Sesja jest zapisywana i sama się zamyka po 20 minutach bez pisania.</p>
+    <label for="totp">Kod z aplikacji uwierzytelniającej</label>
+    <input id="totp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="123456" required>
+    <p class="err" id="err" hidden></p>
+    <button type="submit" class="b pri" id="go">Otwórz terminal</button>
+  </form>
+  <div id="term" hidden></div>
+  <div class="ended" id="ended" hidden><p id="endtxt">Sesja zakończona.</p><button type="button" class="b pri" id="again">Nowa sesja</button></div>
+</main>
+<script src="vendor/xterm.js"></script>
+<script src="vendor/addon-fit.js"></script>
+<script src="terminal.js?v=1"></script>
+</body>
+</html>

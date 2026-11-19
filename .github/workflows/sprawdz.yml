@@ -1,0 +1,18 @@
+name: Sprawdzenie
+on: [push, pull_request]
+jobs:
+  sprawdz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --no-audit --no-fund
+      - run: npm run check
+      - name: Panel startuje z pustą konfiguracją
+        run: |
+          mkdir -p /tmp/dane
+          DATA_DIR=/tmp/dane PORT=8199 COOKIE_SECURE=0 AUTOPILOT=0 node --disable-warning=ExperimentalWarning server.mjs &
+          for i in $(seq 1 30); do curl -fsS -H 'x-panel: 1' http://127.0.0.1:8199/api/stan && exit 0; sleep 1; done
+          exit 1
