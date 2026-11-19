@@ -1,5 +1,21 @@
 # Zmiany
 
+## 1.6.0 — 19.11.2026
+
+- **Bezpieczeństwo** — nowa strona: wynik 0–100 i lista spraw z przyciskiem „Napraw” (logowanie roota hasłem,
+  zapora i porty widoczne z internetu, restart po aktualizacjach jądra, automatyczne poprawki, fail2ban, LLMNR,
+  certyfikaty). Naprawy trafiają do dziennika zmian.
+- **Sklep z aplikacjami** — Nextcloud, Vaultwarden, Uptime Kuma, Gitea, n8n, Umami i Paperless-ngx jednym kliknięciem:
+  kontener Docker (port tylko na 127.0.0.1, limit pamięci), własny adres z certyfikatem, nocne kopie danych,
+  aktualizacja i usuwanie przyciskiem. Docker instaluje się z panelu.
+- **Kopie na drugi serwer z grupy** — nowy cel kopii poza serwerem: tamten panel zakłada zamknięte konto
+  (tylko SFTP, tylko klucz), kopie są szyfrowane tutaj. Test odczytu działa też dla SFTP bez powłoki (np. Storage Box).
+- **Strażnik grupy** — serwery z grupy pilnują się nawzajem; gdy któryś nie odpowiada dłużej niż próg, alarm idzie
+  kanałami autopilota (GibCord, e-mail, telefon), a po powrocie — druga wiadomość z czasem przerwy.
+- **Przenoszenie stron** — kreator w 4 krokach: serwer docelowy, co przenieść (pliki, baza z kontami i hasłami,
+  ustawienia PHP), przeniesienie, przełączenie adresu (sam w OVH albo z instrukcją), certyfikat na nowym serwerze
+  i wyłączenie starej kopii; usunięcie jej jednym kliknięciem (panel przypomina po 7 dniach).
+
 ## 1.5.1 — 19.11.2026
 
 - **Porządek w ikonach**: cały panel na jednym zestawie (Lucide, kreska 1,75) — każda pozycja menu ma inną ikonę

@@ -14,7 +14,11 @@ bazami i aplikacjami bez ciągłego siedzenia w konsoli. Działa w przeglądarce
 - **„Coś nie działa?”** — diagnoza typowych problemów z przyciskiem „Napraw”.
 - **Serwer** — usługi, wydajność z historią, aktualizacje systemu, harmonogram zadań, logi, dysk i sprzątanie,
   zapora ufw z bezpiecznikiem, terminal w przeglądarce, konta SFTP i klucze SSH.
-- **Grupa serwerów** — kilka serwerów z panelem łączysz kodem i zarządzasz wszystkimi z jednego miejsca.
+- **Sklep z aplikacjami** — Nextcloud, Vaultwarden, Uptime Kuma, Gitea, n8n, Umami, Paperless-ngx: kontener Docker,
+  adres z certyfikatem, kopie i aktualizacje przyciskiem.
+- **Bezpieczeństwo** — wynik 0–100 i lista spraw z przyciskiem „Napraw” (SSH, zapora, aktualizacje, fail2ban, certyfikaty).
+- **Grupa serwerów** — kilka serwerów z panelem łączysz kodem i zarządzasz wszystkimi z jednego miejsca; serwery
+  pilnują się nawzajem (alarm, gdy któryś padnie), robią sobie nawzajem kopie i przenoszą strony między sobą.
 - **Bezpieczeństwo** — logowanie z kodem z aplikacji (2FA), role (właściciel, administrator, podgląd, dostęp do
   wybranych stron), dziennik zmian z cofaniem, blokada po nieudanych logowaniach.
 

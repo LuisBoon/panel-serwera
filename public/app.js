@@ -43,6 +43,10 @@ const NS = 'http://www.w3.org/2000/svg';
 // z Feather (MIT, Copyright (c) 2013-present Cole Bemis). Jeden zestaw, kreska 1,75, siatka 24×24 — nie dorysowywać własnych.
 // Ikony: Lucide (https://lucide.dev), licencja ISC — Copyright (c) Lucide Icons and Contributors; część pochodzi
 // z Feather (MIT, Copyright (c) 2013-present Cole Bemis). Jeden zestaw, kreska 1,75, siatka 24×24 — nie dorysowywać własnych.
+// Ikony: Lucide (https://lucide.dev), licencja ISC — Copyright (c) Lucide Icons and Contributors; część pochodzi
+// z Feather (MIT, Copyright (c) 2013-present Cole Bemis). Jeden zestaw, kreska 1,75, siatka 24×24 — nie dorysowywać własnych.
+// Ikony: Lucide (https://lucide.dev), licencja ISC — Copyright (c) Lucide Icons and Contributors; część pochodzi
+// z Feather (MIT, Copyright (c) 2013-present Cole Bemis). Jeden zestaw, kreska 1,75, siatka 24×24 — nie dorysowywać własnych.
 const ICONS = {
   pulpit: '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>', // layout-dashboard
   napraw: '<path d="M11 2v2"/><path d="M5 2v2"/><path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"/><path d="M8 15a6 6 0 0 0 12 0v-3"/><circle cx="20" cy="10" r="2"/>', // stethoscope
@@ -68,6 +72,16 @@ const ICONS = {
   dziennik: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>', // history
   ustawienia: '<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/>', // settings
   pomoc: '<circle cx="12" cy="12" r="10"/><path d="M9 9.5a3 2.5 0 016 0c0 2-2 2-3 3.5"/><path d="M12 17h.01"/>', // circle-help
+  bezpieczenstwo: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 22V2"/>', // shield-half
+  sklep: '<path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5"/><path d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244"/><path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05"/>', // store
+  automatyzacja: '<rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/>', // workflow
+  dokumenty: '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8h8"/><path d="M7 12h10"/><path d="M7 16h6"/>', // scan-text
+  przenies: '<path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/>', // arrow-right-left
+  straznik: '<path d="M7 18v-6a5 5 0 1 1 10 0v6"/><path d="M5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z"/><path d="M21 12h1"/><path d="M18.5 4.5 18 5"/><path d="M2 12h1"/><path d="M12 2v1"/><path d="m4.929 4.929.707.707"/><path d="M12 12v6"/>', // siren
+  kontener: '<path d="M22 7.7c0-.6-.4-1.2-.8-1.5l-6.3-3.9a1.72 1.72 0 0 0-1.7 0l-10.3 6c-.5.2-.9.8-.9 1.4v6.6c0 .5.4 1.2.8 1.5l6.3 3.9a1.72 1.72 0 0 0 1.7 0l10.3-6c.5-.3.9-1 .9-1.5Z"/><path d="M10 21.9V14L2.1 9.1"/><path d="m10 14 11.9-6.9"/><path d="M14 19.8v-8.1"/><path d="M18 17.5V9.4"/>', // container
+  pakiet: '<path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/>', // package
+  aktywnosc: '<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>', // activity
+  dalejstrz: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>', // arrow-right
   plus: '<path d="M5 12h14"/><path d="M12 5v14"/>', // plus
   popraw: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/>', // wrench
   restart: '<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>', // rotate-cw
@@ -266,8 +280,8 @@ async function backupNow(ev) {
 
 const NAV = [
   ['pulpit', 'Pulpit'], ['napraw', 'Coś nie działa?'], ['serwery', 'Wszystkie serwery'],
-  ['-', 'Strony i dane'], ['strony', 'Strony'], ['statystyki', 'Statystyki'], ['bazy', 'Bazy danych'], ['kopie', 'Kopie zapasowe'], ['awaria', 'Plan awaryjny'], ['gry', 'Serwery gier'],
-  ['-', 'Serwer'], ['uslugi', 'Usługi'], ['wydajnosc', 'Wydajność'], ['aktualizacje', 'Aktualizacje'], ['autopilot', 'Autopilot'], ['zapora', 'Zapora'], ['dysk', 'Dysk'], ['logi', 'Logi'], ['ssl', 'Certyfikaty SSL'], ['cron', 'Harmonogram'],
+  ['-', 'Strony i dane'], ['strony', 'Strony'], ['sklep', 'Sklep z aplikacjami'], ['statystyki', 'Statystyki'], ['bazy', 'Bazy danych'], ['kopie', 'Kopie zapasowe'], ['awaria', 'Plan awaryjny'], ['gry', 'Serwery gier'],
+  ['-', 'Serwer'], ['uslugi', 'Usługi'], ['wydajnosc', 'Wydajność'], ['aktualizacje', 'Aktualizacje'], ['autopilot', 'Autopilot'], ['bezpieczenstwo', 'Bezpieczeństwo'], ['zapora', 'Zapora'], ['dysk', 'Dysk'], ['logi', 'Logi'], ['ssl', 'Certyfikaty SSL'], ['cron', 'Harmonogram'],
   ['-', 'Narzędzia'], ['terminal', 'Terminal'], ['dostep', 'Dostęp'], ['dziennik', 'Dziennik zmian'], ['ustawienia', 'Ustawienia panelu'], ['pomoc', 'Pomoc'],
 ];
 let shell = null;
@@ -296,7 +310,7 @@ function toggleMenu(open) {
   shell.side.classList.toggle('open', o);
   shell.scrim.hidden = !o;
 }
-const NAV_MOD = { strony: 'strony', statystyki: 'statystyki', bazy: 'bazy', kopie: 'kopie', awaria: 'kopie', gry: 'gry', autopilot: 'autopilot', zapora: 'zapora', terminal: 'terminal', dostep: 'dostep' };
+const NAV_MOD = { sklep: 'sklep', strony: 'strony', statystyki: 'statystyki', bazy: 'bazy', kopie: 'kopie', awaria: 'kopie', gry: 'gry', autopilot: 'autopilot', zapora: 'zapora', terminal: 'terminal', dostep: 'dostep' };
 function navFor() {
   if (state.role === 'strony') return [['strony', 'Moje strony'], ['statystyki', 'Statystyki']];
   const list = NAV.filter(([id]) => (!['terminal', 'dostep'].includes(id) || state.role === 'wlasciciel') && (!NAV_MOD[id] || MOD(NAV_MOD[id])) && (id !== 'serwery' || (!state.srv && isAdmin())) && (id !== 'ustawienia' || (!state.srv && state.role === 'wlasciciel')));
@@ -612,13 +626,21 @@ function cloudCard(c) {
   };
   const formBox = h('div', { class: 'stack', style: 'gap:12px' });
   const showForm = () => {
-    let prov = c.provider || 'b2';
+    let prov = c.provider || (c.groupServers?.length ? 'grupa' : 'b2');
     const fields = h('div', { class: 'form-grid' });
     const hint = h('div', { class: 'small muted' });
     const steps = h('ol', { class: 'small', style: 'margin:0;padding-left:20px;line-height:1.6;color:#c9d1dc' });
     const inputs = {};
     const draw = () => {
       hint.textContent = P[prov].hint;
+      if (prov === 'grupa') {
+        const gs = c.groupServers || [];
+        const sel = h('select', { class: 'input', id: 'kopie-serwer', 'aria-label': 'Serwer na kopie' }, gs.map((x) => h('option', { value: x.id, selected: c.provider === 'grupa' && c.cfg.server === x.id || null }, `${x.nazwa} — ${x.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}`)));
+        inputs.server = sel;
+        fields.replaceChildren(gs.length ? h('label', { class: 'field' }, h('span', null, 'Serwer'), sel) : h('div', { class: 'small', style: 'color:var(--warn-ink)' }, 'Nie ma jeszcze drugiego serwera z prawem zarządzania. Połącz go na stronie ', h('a', { href: '#/serwery' }, 'Wszystkie serwery'), '.'));
+        steps.replaceChildren(h('li', null, 'Na tamtym serwerze nic nie trzeba robić — ten panel sam poprosi o zamknięte konto na kopie.'), h('li', null, 'Kopie są szyfrowane tutaj; tamten serwer widzi tylko zaszyfrowane pliki.'), h('li', null, 'Najlepiej, gdy tamten serwer robi kopie u Ciebie — padnie jeden, kopia jest na drugim.'));
+        return;
+      }
       fields.replaceChildren(...P[prov].fields.map(([k, label, secret]) => {
         const i = h('input', { class: 'input', type: secret ? 'password' : 'text', autocomplete: 'off', spellcheck: 'false', autocapitalize: 'off', value: c.provider === prov ? c.cfg[k] || '' : (k === 'port' ? (prov === 'sftp' ? '23' : '') : '') });
         inputs[k] = i;
@@ -644,7 +666,7 @@ function cloudCard(c) {
   };
   if (!c.configured) {
     showForm();
-    return h('section', { class: 'card', id: 'chmura' }, h('div', { class: 'card-h' }, h('div', null, h('h2', null, 'Kopie w chmurze'), h('div', { class: 'small muted', style: 'margin-top:4px' }, 'Teraz kopie leżą tylko na tym samym dysku co strony. Jeśli dysk padnie, przepadną razem z nimi. Podłącz miejsce w chmurze — kopie pójdą tam co noc, zaszyfrowane.'))), formBox);
+    return h('section', { class: 'card', id: 'chmura' }, h('div', { class: 'card-h' }, h('div', null, h('h2', null, 'Kopie poza serwerem'), h('div', { class: 'small muted', style: 'margin-top:4px' }, 'Teraz kopie leżą tylko na tym samym dysku co strony. Jeśli dysk padnie, przepadną razem z nimi. Podłącz miejsce w chmurze — kopie pójdą tam co noc, zaszyfrowane.'))), formBox);
   }
   const L = c.last, T = c.lastTest;
   const sendB = btn('Wyślij teraz', () => call(sendB, 'POST', 'api/chmura/wyslij'), { small: true, icon: 'chmura', kind: 'pri', disabled: c.busy });
@@ -658,9 +680,9 @@ function cloudCard(c) {
   const editB = btn('Zmień', () => { showForm(); editB.replaceWith(formBox); }, { small: true, kind: 'ghost' });
   const gb = (n) => n ? `${(n / 1073741824).toFixed(2).replace('.', ',')} GB` : '';
   return h('section', { class: 'card', id: 'chmura' },
-    h('div', { class: 'card-h' }, h('div', null, h('h2', null, 'Kopie w chmurze'), h('div', { class: 'small muted', style: 'margin-top:4px' }, `${P[c.provider]?.name.split(' (')[0]} · co noc o ${pad(c.hour)}:${pad(c.minute)} · zaszyfrowane · trzymane ${c.keepDays} dni`)), h('div', { class: 'acts' }, sendB, testB)),
+    h('div', { class: 'card-h' }, h('div', null, h('h2', null, 'Kopie poza serwerem'), h('div', { class: 'small muted', style: 'margin-top:4px' }, `${P[c.provider]?.name.split(' (')[0]}${c.provider === 'grupa' && c.cfg.nazwa ? ': ' + c.cfg.nazwa : ''} · co noc o ${pad(c.hour)}:${pad(c.minute)} · zaszyfrowane · trzymane ${c.keepDays} dni`)), h('div', { class: 'acts' }, sendB, testB)),
     h('div', { class: 'rows' },
-      h('div', { class: 'row', style: 'flex-wrap:wrap' }, h('b', { class: 'grow' }, 'Ostatnia wysyłka'), L ? h('span', { class: 'small muted' }, `${when(L.start)}${L.total ? ' · w chmurze ' + gb(L.total) : ''}`) : h('span', { class: 'small muted' }, 'jeszcze nie było'), L ? h('span', { class: `pill ${L.ok ? 'ok' : 'bad'}` }, L.ok ? 'OK' : 'BŁĄD') : null),
+      h('div', { class: 'row', style: 'flex-wrap:wrap' }, h('b', { class: 'grow' }, 'Ostatnia wysyłka'), L ? h('span', { class: 'small muted' }, `${when(L.start)}${L.total ? (c.provider === 'grupa' ? ' · na tamtym serwerze ' : ' · w chmurze ') + gb(L.total) : ''}`) : h('span', { class: 'small muted' }, 'jeszcze nie było'), L ? h('span', { class: `pill ${L.ok ? 'ok' : 'bad'}` }, L.ok ? 'OK' : 'BŁĄD') : null),
       L && !L.ok ? h('div', { class: 'row small', style: 'color:var(--bad-ink)' }, L.msg) : null,
       h('div', { class: 'row', style: 'flex-wrap:wrap' }, h('b', { class: 'grow' }, 'Test odczytu'), T ? h('span', { class: 'small muted' }, `${when(T.start)}${T.file ? ' · ' + T.file : ''}`) : h('span', { class: 'small muted' }, 'co niedzielę rano — jeszcze nie było'), T ? h('span', { class: `pill ${T.ok ? 'ok' : 'bad'}` }, T.ok ? 'da się odczytać' : 'BŁĄD') : null),
       T && !T.ok ? h('div', { class: 'row small', style: 'color:var(--bad-ink)' }, T.msg) : null,
@@ -1438,7 +1460,7 @@ PAGES.strona = async (box, args, q, quiet) => {
       h('div', null, h('div', { style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap' }, h('h1', { style: 'overflow-wrap:anywhere' }, name), st ? sitePill(st.status, st.code) : null,
         d.extras.password.on ? h('span', { class: 'pill warn' }, 'hasło') : null, d.extras.maintenance.on ? h('span', { class: 'pill warn' }, 'przerwa') : null),
         h('div', { class: 'sub' }, [{ pusta: 'strona', php: 'strona PHP', zip: 'strona z ZIP-a', node: 'aplikacja Node.js', przekierowanie: 'przekierowanie', aplikacja: 'aplikacja (proxy)', strona: 'strona' }[d.info.kind] || d.info.kind, d.info.roots[0]?.path, st?.cert?.validTo ? `SSL ${days} ${plural(days, 'dzień', 'dni', 'dni')}` : d.info.https ? '' : 'bez SSL'].filter(Boolean).join(' · '))),
-      h('div', { class: 'acts' }, linkBtn('Otwórz stronę', url, { icon: 'ext', blank: true }), linkBtn('Statystyki', `#/statystyki/${enc(name)}`, { icon: 'statystyki' }))),
+      h('div', { class: 'acts' }, linkBtn('Otwórz stronę', url, { icon: 'ext', blank: true }), linkBtn('Statystyki', `#/statystyki/${enc(name)}`, { icon: 'statystyki' }), isAdmin() && d.info.root && !d.info.proxies?.length ? linkBtn('Przenieś', `#/przenies/${enc(name)}`, { icon: 'przenies' }) : null)),
     h('nav', { class: 'tabs', 'aria-label': 'Zakładki strony' }, siteTabs(d).map(([id, l]) => h('a', { href: `${base}/${id}`, class: id === tab ? 'on' : '', 'aria-current': id === tab ? 'page' : null }, l))),
   );
   if (window.SITE_EXTRA?.[tab]) return window.SITE_EXTRA[tab](box, name, d, q);

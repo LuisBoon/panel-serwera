@@ -30,9 +30,12 @@ import * as AC from './lib/access.mjs';
 import * as RS from './lib/rescue.mjs';
 import * as GR from './lib/group.mjs';
 import * as SU from './lib/setup.mjs';
+import * as SEC from './lib/security.mjs';
+import * as MG from './lib/migrate.mjs';
+import * as SK from './lib/store.mjs';
 import { run, spawnCollect, tail, readText, stamp } from './lib/util.mjs';
 
-const VERSION = '1.5.1';
+const VERSION = '1.6.0';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8099);
 const HOST = process.env.HOST || '127.0.0.1';
@@ -109,6 +112,9 @@ SY.init(db, DATA_DIR, { notify: (t, b, l, o) => AP.sendNotification(t, b, l, o |
 if (process.env.AUTOPILOT !== '0') SY.afterBoot();
 SY.sample();
 setInterval(() => { try { SY.sample(); } catch (e) { console.error('panel: zasoby', e.message); } }, 5 * 60e3).unref();
+// strażnik grupy: co minutę, czy serwery z grupy odpowiadają
+let guardBusy = false;
+setInterval(async () => { if (guardBusy) return; guardBusy = true; try { await GR.guardTick((t, b, l, o) => AP.sendNotification(t, b, l, o)); } catch (e) { console.error('panel: strażnik', e.message); } finally { guardBusy = false; } }, Number(process.env.STRAZNIK_MS) || 60e3).unref();
 DR.init({ panelHosts: PANEL_HOSTS, fails: (ip) => q.fails.get(ip, Date.now() - 15 * 60e3).c, clearFails: (ip) => q.clearFails.run(ip, Date.now() - 24 * 3600e3), ovh: OV });
 TM.init(DATA_DIR, { ended: (x) => {
   const min = Math.max(1, Math.round((x.closedAt - x.started) / 60000));
@@ -234,6 +240,7 @@ function failed(ip, what) {
 
 async function alerts() {
   const out = [];
+  for (const r of MG.reminders()) out.push({ level: 'info', text: `${r.site} działa już na „${r.server}” od ${Math.round((Date.now() - r.since) / 864e5)} dni — usuń starą kopię tutaj`, link: `#/przenies/${encodeURIComponent(r.site)}` });
   const m = S.metrics();
   const pct = m.disk.used / m.disk.total * 100;
   if (pct >= 93) out.push({ level: 'error', text: `Dysk prawie pełny: ${Math.round(pct)}% zajęte`, link: '#/dysk' });
@@ -278,7 +285,7 @@ const route = (method, pattern, handler, opts = {}) => routes.push({ method, pat
 /* Uprawnienia: właściciel i administrator mogą wszystko (konta — tylko właściciel). Pozostali dostają
    tylko to, co jest wprost wymienione niżej — nowa trasa jest domyślnie zamknięta. */
 const ANY_ROUTES = new Set(['GET api/stan', 'POST api/wyloguj', 'POST api/wyloguj-wszedzie', 'GET api/konto', 'POST api/konto/haslo', 'GET api/zadania/:id', 'POST api/grupa/odlacz-mnie']);
-const VIEW_ROUTES = new Set(['api/grupa/stan', 'api/pulpit', 'api/strony', 'api/uslugi', 'api/kopie', 'api/autopilot', 'api/statystyki', 'api/statystyki/:site', 'api/ssl', 'api/cron', 'api/dysk', 'api/zapora', 'api/strona/:name', 'api/autopilot/push', 'api/gry'].map((x) => 'GET ' + x));
+const VIEW_ROUTES = new Set(['api/sklep', 'api/bezpieczenstwo', 'api/grupa/stan', 'api/pulpit', 'api/strony', 'api/uslugi', 'api/kopie', 'api/autopilot', 'api/statystyki', 'api/statystyki/:site', 'api/ssl', 'api/cron', 'api/dysk', 'api/zapora', 'api/strona/:name', 'api/autopilot/push', 'api/gry'].map((x) => 'GET ' + x));
 const SITE_ROUTES = new Set(['GET api/strony', 'GET api/statystyki', 'GET api/statystyki/:site', 'GET api/strona/:name', 'GET api/strona/:name/pliki', 'GET api/strona/:name/plik', 'POST api/strona/:name/plik', 'GET api/strona/:name/plik/wersja', 'POST api/strona/:name/plik/wersja',
   'POST api/strona/:name/pliki/:act', 'POST api/strona/:name/wgraj', 'GET api/strona/:name/pobierz', 'POST api/strona/:name/wersje', 'POST api/strona/:name/wersje/:id/przywroc', 'POST api/strona/:name/git', 'POST api/strona/:name/git/wdroz', 'POST api/strona/:name/haslo', 'POST api/strona/:name/przerwa']);
 function allowed(r, who, p) {
@@ -676,12 +683,23 @@ route('POST', 'api/ustawienia/aktualizuj', tErr(async (req, res, { who }) => {
 
 /* ---------------------------------------------------------------- grupa serwerów */
 
-route('GET', 'api/grupa', tErr(async (req, res) => { send(res, 200, { servers: GR.servers(), access: GR.accessList(), roles: GR.ROLES, me: { nazwa: CFG.C().nazwa, url: PUBLIC_URL } }); }), { owner: true });
+route('GET', 'api/grupa', tErr(async (req, res) => { const w = GR.guardState(); send(res, 200, { servers: GR.servers(), access: GR.accessList().map((a) => ({ ...a, watch: w[a.url] || null })), spaces: await AC.backupSpaces(), roles: GR.ROLES, me: { nazwa: CFG.C().nazwa, url: PUBLIC_URL }, guard: GR.guardSettings() }); }), { owner: true });
+// miejsce na kopie dla panelu, który zarządza tym serwerem (wywołuje go tylko tamten panel, tokenem grupy)
+route('POST', 'api/grupa/kopie/miejsce', tErr(async (req, res, { b, who }) => {
+  if (!who.viaGroup || who.role !== 'admin') throw httpErr(403, 'Miejsce na kopie zakłada tylko połączony panel z prawem zarządzania.');
+  const a = GR.accessList().find((x) => x.id === who.groupId);
+  const r = await AC.backupSpace({ id: who.groupId, from: a?.nazwa || who.login.split(':')[0], url: a?.url || '', pubkey: b.pubkey }, who);
+  slog(who, 'grupa:kopie-miejsce', r.user);
+  send(res, 200, r);
+}));
+route('POST', 'api/grupa/kopie/:user/usun', tErr(async (req, res, { p, who }) => { await AC.backupSpaceDelete(p.user, who); slog(who, 'grupa:kopie-usun', p.user); send(res, 200, { ok: true }); }), { owner: true });
+route('POST', 'api/grupa/straznik', tErr(async (req, res, { b, who }) => { const g = GR.saveGuard(b); slog(who, 'grupa:straznik', JSON.stringify(g)); J.add(who, 'system', g.on ? `Strażnik grupy: alarm po ${g.minutes} min` : 'Strażnik grupy wyłączony'); send(res, 200, g); }), { owner: true });
 route('GET', 'api/grupa/stan', tErr(async (req, res, { who }) => {
   const remote = who.viaGroup ? [] : await GR.overview(who);
   const { history, ...m } = S.metrics();
   const local = { id: '', nazwa: CFG.C().nazwa, url: PUBLIC_URL, ok: true, version: VERSION, konfig: CFG.publicInfo(), pulpit: GR.summary({ metrics: m, alerts: await alerts(), sites: await (async () => { const l = await S.sites(); return { total: l.filter((x) => x.enabled).length, ok: l.filter((x) => x.enabled && x.status === 'ok').length }; })() }) };
-  send(res, 200, { servers: [local, ...remote] });
+  const w = GR.guardState();
+  send(res, 200, { servers: [local, ...remote.map((x) => ({ ...x, watch: w[x.url] || null }))], guard: GR.guardSettings() });
 }));
 route('POST', 'api/grupa/kod', tErr(async (req, res, { b, who }) => { const r = GR.newCode(String(b.rola || 'admin'), who); slog(who, 'grupa:kod', r.rola); send(res, 200, r); }), { owner: true });
 route('POST', 'api/grupa/sparuj', tErr(async (req, res, { b, ip }) => {
@@ -700,6 +718,70 @@ route('POST', 'api/grupa/odlacz-mnie', tErr(async (req, res, { who }) => {
 }));
 
 /* ---------------------------------------------------------------- „Coś nie działa?” */
+
+/* ---------------------------------------------------------------- sklep z aplikacjami */
+
+SK.init(db, { ovh: OV });
+route('GET', 'api/sklep', tErr(async (req, res) => send(res, 200, { ...(await SK.catalog()), jobs: [...jobs.values()].filter((j) => j.kind.startsWith('sklep')).slice(-3) })));
+route('POST', 'api/sklep/docker', tErr(async (req, res, { who }) => {
+  if (TEST_COPY) throw httpErr(400, 'To kopia testowa panelu — Docker instaluje się na całym serwerze.');
+  slog(who, 'sklep:docker', '');
+  send(res, 200, { job: startJob('sklep-docker', 'Instalacja Dockera', who, (say) => SK.installDocker(who, say)) });
+}), { owner: true });
+route('POST', 'api/sklep/zainstaluj', tErr(async (req, res, { b, who }) => {
+  slog(who, 'sklep:instaluj', `${b.app} → ${b.host}`);
+  send(res, 200, { job: startJob('sklep-instalacja', `Instalacja: ${String(b.app || '')}`, who, (say) => SK.install(b, who, say)) });
+}));
+route('GET', 'api/sklep/:id/logi', tErr(async (req, res, { p }) => send(res, 200, { text: await SK.logs(p.id) })));
+route('POST', 'api/sklep/:id/:act', tErr(async (req, res, { p, who }) => {
+  if (!['aktualizuj', 'restart', 'stop', 'start', 'usun'].includes(p.act)) throw httpErr(404, 'Nieznana czynność.');
+  if (p.act === 'usun' && who.role !== 'wlasciciel') throw httpErr(403, 'Aplikację usuwa tylko właściciel.');
+  slog(who, 'sklep:' + p.act, p.id);
+  const label = { aktualizuj: 'Aktualizacja', restart: 'Restart', stop: 'Zatrzymanie', start: 'Uruchomienie', usun: 'Usuwanie' }[p.act];
+  send(res, 200, { job: startJob(`sklep-${p.act}`, `${label}: ${p.id}`, who, (say) => SK.action(p.id, p.act, who, say)) });
+}));
+
+/* ---------------------------------------------------------------- przenoszenie stron */
+
+MG.init(db, { ovh: OV, hosts: PANEL_HOSTS });
+const groupAdmin = (who) => { if (!who.viaGroup || who.role !== 'admin') throw httpErr(403, 'To wywołuje tylko połączony panel z prawem zarządzania.'); };
+// serwer B (wywołuje panel, z którego przenosimy)
+route('POST', 'api/grupa/strona/sprawdz', tErr(async (req, res, { b, who }) => { groupAdmin(who); send(res, 200, await MG.canReceive(b)); }));
+route('POST', 'api/grupa/strona/przyjmij', tErr(async (req, res, { who }) => {
+  groupAdmin(who);
+  const len = Number(req.headers['content-length'] || 0);
+  if (!len) throw httpErr(400, 'Pusta paczka.');
+  const free = Number((await run('df', ['-B1', '--output=avail', DATA_DIR])).out.split('\n')[1]) || 0;
+  if (free < len * 3 + 300 * 1048576) throw httpErr(507, 'Za mało miejsca na dysku tego serwera.');
+  fs.mkdirSync(path.join(DATA_DIR, 'tmp'), { recursive: true, mode: 0o700 });
+  const tmp = path.join(DATA_DIR, 'tmp', `przyjmij-${Date.now()}-${crypto.randomBytes(3).toString('hex')}.tar`);
+  await new Promise((ok, bad) => { const out = fs.createWriteStream(tmp, { mode: 0o600 }); req.pipe(out); out.on('finish', ok); out.on('error', bad); req.on('error', bad); });
+  slog(who, 'przenies:przyjmij', `${len} B`);
+  send(res, 200, { job: startJob('przyjmij-strone', 'Przyjęcie strony z innego serwera', who, (say) => MG.receive(tmp, who, say)) });
+}), { raw: true });
+route('POST', 'api/grupa/strona/ssl', tErr(async (req, res, { b, who }) => { groupAdmin(who); const st = await MG.receiveSsl(String(b.name || ''), () => {}); send(res, 200, { ok: st === 'gotowe', msg: st }); }));
+// serwer A
+route('GET', 'api/strona/:name/przenies', tErr(async (req, res, { p }) => { const pl = await MG.plan(site(p)); send(res, 200, { ...pl, dns: pl.current ? await MG.dnsState(pl.current.id) : null, jobs: [...jobs.values()].filter((j) => j.kind.startsWith('przenies')).slice(-3) }); }));
+route('POST', 'api/strona/:name/przenies', tErr(async (req, res, { p, b, who }) => {
+  const name = site(p);
+  slog(who, 'przenies:start', `${name} → ${b.server}`);
+  send(res, 200, { job: startJob('przenies', `Przenoszenie ${name}`, who, (say) => MG.start(name, b, who, say)) });
+}));
+route('GET', 'api/przeniesienia/:id', tErr(async (req, res, { p }) => send(res, 200, await MG.dnsState(p.id))));
+route('POST', 'api/przeniesienia/:id/dns', tErr(async (req, res, { p, who }) => { slog(who, 'przenies:dns', p.id); send(res, 200, { job: startJob('przenies-dns', 'Przestawienie adresu w OVH', who, (say) => MG.switchDns(p.id, say).then((r) => ({ ok: true, result: r }))) }); }));
+route('POST', 'api/przeniesienia/:id/zakoncz', tErr(async (req, res, { p, who }) => { slog(who, 'przenies:zakoncz', p.id); send(res, 200, { job: startJob('przenies-koniec', 'Przełączenie strony', who, (say) => MG.finish(p.id, who, say)) }); }));
+route('POST', 'api/przeniesienia/:id/usun', tErr(async (req, res, { p, who }) => { slog(who, 'przenies:usun', p.id); send(res, 200, { job: startJob('przenies-usun', 'Usuwanie starej kopii strony', who, (say) => MG.removeOld(p.id, who, say)) }); }), { owner: true });
+
+/* ---------------------------------------------------------------- bezpieczeństwo */
+
+SEC.init({ users: () => q.activeUsers.get().c, startJob: (...a) => startJob(...a) });
+route('GET', 'api/bezpieczenstwo', tErr(async (req, res) => { send(res, 200, await SEC.check()); }));
+route('POST', 'api/bezpieczenstwo/napraw', tErr(async (req, res, { b, who }) => {
+  if (TEST_COPY) throw httpErr(400, 'To kopia testowa panelu — naprawy zmieniają cały serwer.');
+  const r = await SEC.fix(String(b.id || ''), who);
+  slog(who, 'bezpieczenstwo:napraw', String(b.id));
+  send(res, 200, r);
+}));
 
 route('GET', 'api/napraw', tErr(async (req, res) => { send(res, 200, { problems: DR.PROBLEMS, targets: await DR.targets() }); }));
 route('POST', 'api/napraw/sprawdz', tErr(async (req, res, { b, ip }) => { send(res, 200, await DR.check(String(b.problem || ''), b.target, { clientIp: ip })); }));
@@ -900,6 +982,7 @@ route('POST', 'api/utworz/zip', async (req, res, { who }) => {
   } catch (e) { fs.rmSync(file, { force: true }); throw httpErr(400, e.message); }
 }, { raw: true });
 route('POST', 'api/utworz', async (req, res, { b, who }) => {
+  if (String(b.szablon || '') === 'kontener') throw httpErr(400, 'Aplikacje w kontenerach instaluje się w Sklepie z aplikacjami.');
   const opts = { template: String(b.szablon || ''), host: String(b.adres || ''), name: String(b.nazwa || ''), db: b.baza === undefined ? undefined : !!b.baza, startPage: b.wkrotce !== false, target: String(b.cel || ''), zip: String(b.zip || ''), tmpDir: TMP_DIR };
   const chk = await C.check(opts);
   if (!chk.ok) throw httpErr(400, chk.problems.join(' '));

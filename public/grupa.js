@@ -3,7 +3,7 @@
 const { h, put, api, btn, linkBtn, ico, busy, toast, ask, when, bytes, plural, PAGES, state, isAdmin, every } = window.P;
 
 async function loadGroup() {
-  try { state.group = (await api('GET', 'api/grupa/stan')).servers; } catch { state.group = state.group || []; }
+  try { const r = await api('GET', 'api/grupa/stan'); state.group = r.servers; state.guard = r.guard; } catch { state.group = state.group || []; }
   return state.group;
 }
 /** Przełączenie na inny serwer z grupy ('' = ten). */
@@ -64,10 +64,12 @@ PAGES.serwery = async (box) => {
     }), { small: true, icon: 'usun', kind: 'ghost', title: 'Odłącz' }) : null;
     return h('section', { class: `card srvt ${s.ok ? '' : 'down'}` },
       h('div', { class: 'srvt-h' }, h('span', { class: `dot ${s.ok ? '' : 'b'}` }), h('div', { class: 'stack grow', style: 'min-width:0;gap:0' }, h('b', { class: 'ell' }, s.nazwa, s.id ? '' : ' (ten)'), h('small', { class: 'muted ell' }, (s.url || '').replace(/^https?:\/\//, '').replace(/\/$/, '') || 'ten serwer')),
+        s.watch?.alerted ? h('span', { class: 'pill bad' }, ico('straznik', 13), 'alarm wysłany') : null,
         s.ok && (p.alerts || p.warns) ? h('span', { class: `pill ${p.alerts ? 'bad' : 'warn'}` }, p.alerts ? `${p.alerts} ${plural(p.alerts, 'błąd', 'błędy', 'błędów')}` : `${p.warns} ${plural(p.warns, 'uwaga', 'uwagi', 'uwag')}`) : s.ok ? h('span', { class: 'pill ok' }, 'OK') : h('span', { class: 'pill bad' }, 'nie odpowiada')),
       s.ok ? h('div', { class: 'stack', style: 'gap:6px' }, bar('Procesor', p.cpu != null ? Math.round(p.cpu) : null), bar('Pamięć', p.mem), bar('Dysk', p.disk),
-        h('div', { class: 'small muted' }, [p.sites?.all != null ? `strony: ${p.sites.ok ?? '?'} z ${p.sites.all} działa` : null, s.version ? `panel ${s.version}` : null, s.rola && s.id ? (s.rola === 'podglad' ? 'tylko podgląd' : 'zarządzanie') : null].filter(Boolean).join(' · ')))
-        : h('p', { class: 'small', style: 'margin:0;color:var(--bad-ink)' }, s.error || 'Brak odpowiedzi.'),
+        h('div', { class: 'small muted' }, [p.sites?.all != null ? `strony: ${p.sites.ok ?? '?'} z ${p.sites.all} działa` : null, s.version ? `panel ${s.version}` : null, s.rola && s.id ? (s.rola === 'podglad' ? 'tylko podgląd' : 'zarządzanie') : null].filter(Boolean).join(' · ')),
+        s.id && state.guard?.on ? h('div', { class: 'small', style: 'display:flex;gap:6px;align-items:center;color:var(--ok-ink)' }, ico('autopilot', 14), `pilnowany — alarm po ${state.guard.minutes} min bez odpowiedzi`) : null)
+        : h('p', { class: 'small', style: 'margin:0;color:var(--bad-ink)' }, s.error || 'Brak odpowiedzi.', s.watch?.downSince ? ` · nie odpowiada od ${Math.max(1, Math.round((Date.now() - s.watch.downSince) / 60e3))} min` : ''),
       h('div', { class: 'acts', style: 'flex-wrap:wrap' }, manage, s.id ? linkBtn('Jego panel', s.url, { small: true, icon: 'ext', blank: true }) : null, del));
   };
   put(box,
@@ -101,10 +103,25 @@ PAGES.serwery = async (box) => {
       h('section', { class: 'card stack', style: 'gap:12px' }, h('h2', null, 'Pozwól innemu panelowi zarządzać tym serwerem'),
         h('p', { class: 'small muted', style: 'margin:0' }, 'Tamten panel dostanie dostęp bez logowania i kodu z aplikacji, ale nigdy do kont, terminala i kluczy SSH. Dostęp możesz odebrać w każdej chwili.'),
         h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;align-items:center' }, role, mk), codeBox)),
+    guardCard(g),
     h('section', { class: 'card' }, h('div', { class: 'card-h' }, h('div', null, h('h2', null, 'Kto zarządza tym serwerem'), h('div', { class: 'small muted', style: 'margin-top:4px' }, 'Inne panele, które mają dostęp do tego serwera.'))),
       g.access.length ? h('div', { class: 'rows' }, g.access.map((a) => {
         const rv = btn('Odbierz dostęp', () => busy(rv, async () => { if (!(await ask({ title: `Odebrać dostęp panelowi „${a.nazwa}”?`, text: 'Tamten panel od razu straci dostęp do tego serwera.', ok: 'Odbierz', danger: true }))) return; await api('POST', `api/grupa/dostep/${a.id}/odwolaj`, {}); toast('✓ Odebrano', 'ok'); window.P.reload(); }), { small: true, kind: 'danger' });
-        return h('div', { class: 'row', style: 'flex-wrap:wrap' }, h('div', { class: 'stack grow', style: 'flex-basis:220px' }, h('span', { class: 't' }, a.nazwa), h('span', { class: 's' }, `${g.roles[a.rola] || a.rola} · połączony ${when(a.created)}${a.last_used ? ' · ostatnio ' + when(a.last_used) + (a.ip ? ' z ' + a.ip : '') : ''}`)), rv);
+        return h('div', { class: 'row', style: 'flex-wrap:wrap' }, h('div', { class: 'stack grow', style: 'flex-basis:220px' }, h('span', { class: 't' }, a.nazwa), h('span', { class: 's' }, `${g.roles[a.rola] || a.rola} · połączony ${when(a.created)}${a.last_used ? ' · ostatnio ' + when(a.last_used) + (a.ip ? ' z ' + a.ip : '') : ''}`),
+          (() => { const sp = (g.spaces || []).find((x) => x.server_id === a.id); return sp ? h('span', { class: 's' }, `trzyma tu swoje kopie: ${bytes(sp.size)} (konto ${sp.user})`) : null; })(),
+          a.watch ? h('span', { class: 's', style: `color:${a.watch.downSince ? 'var(--bad-ink)' : 'var(--ok-ink)'}` }, a.watch.downSince ? `nie odpowiada od ${Math.max(1, Math.round((Date.now() - a.watch.downSince) / 60e3))} min${a.watch.alerted ? ' · alarm wysłany' : ''}` : 'odpowiada — ten serwer też go pilnuje') : null), rv);
       })) : h('div', { class: 'list-empty' }, 'Żaden inny panel nie zarządza tym serwerem.')));
   every(30000, () => window.P.reload());
 };
+
+function guardCard(g) {
+  const gs = g.guard || { on: true, minutes: 5 };
+  const on = h('input', { type: 'checkbox', checked: gs.on, id: 'straz-on' });
+  const min = h('select', { class: 'input', style: 'width:auto', id: 'straz-min', 'aria-label': 'Po ilu minutach alarm' }, [2, 3, 5, 10, 15, 30].map((m) => h('option', { value: m, selected: m === gs.minutes || null }, `${m} min`)));
+  const save = async () => { try { const r = await api('POST', 'api/grupa/straznik', { on: on.checked, minutes: Number(min.value) }); state.guard = r; toast(r.on ? `✓ Alarm po ${r.minutes} min bez odpowiedzi` : 'Strażnik wyłączony', 'ok'); } catch (e) { toast(e.message, 'bad'); } };
+  on.onchange = save; min.onchange = save;
+  return h('section', { class: 'card stack', style: 'gap:10px' }, h('div', { style: 'display:flex;gap:10px;align-items:center' }, ico('straznik', 20), h('h2', null, 'Strażnik grupy')),
+    h('p', { class: 'small muted', style: 'margin:0' }, 'Serwery z grupy pilnują się nawzajem. Gdy któryś padnie całkiem (i sam nie może nic wysłać), alarm wyśle ten panel — tymi samymi kanałami co autopilot (GibCord, e-mail, telefon). Gdy wróci, przyjdzie druga wiadomość.'),
+    h('div', { style: 'display:flex;gap:14px;align-items:center;flex-wrap:wrap' }, h('label', { class: 'check', for: 'straz-on' }, on, 'Pilnuj serwerów z grupy'), h('label', { style: 'display:flex;gap:8px;align-items:center' }, h('span', { class: 'small muted' }, 'Alarm po'), min)),
+    h('p', { class: 'small muted', style: 'margin:0' }, 'Kanały powiadomień ustawisz w Autopilocie. Pilnowanie działa, gdy w grupie są co najmniej dwa serwery.'));
+}
